@@ -45,6 +45,7 @@ class Core():
         self.spaces.draw(self.ori_screen)
         self.entities.draw(self.ori_screen)
         self.screen.blit(pg.transform.scale(self.ori_screen, self.screen.get_rect().size), (0,0))
+        self.drawUI()
         
     def keyupdate(self):
         if pg.K_LEFT in self.pressed:
@@ -57,8 +58,31 @@ class Core():
             self.hero.effects.append(effects.simple_forward(self.hero, -10))
 
     def keypress(self, key):
+        if key == pg.K_ESCAPE:
+            self.state = 3
         if key == pg.K_SPACE:
-            skills.sample_cut(self, self.hero)
+            skills.sample_cut(self.hero)
+        if key == pg.K_a:
+            skills.fire_boll(self.hero)
+
+    def drawUI(self):
+        width = 8
+        leftlimit = 6
+        rightlimit = self.screen.get_width()/3
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point/self.hero.max_hp)
+        margin = 4
+        pg.draw.line(self.screen, (255,0,0,100), (leftlimit, margin), (point, margin), width)
+        pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point/self.hero.max_mp)
+        margin = 16
+        pg.draw.line(self.screen, (0,0,255,100), (leftlimit, margin), (point, margin), width)
+        pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
+        margin = 4
+        count = 0
+        for effect in self.hero.effects:
+            if isinstance(effect, effects.icon):
+                self.screen.blit(effect.image, (rightlimit+width+count*32, margin))
+                count += 1
 
     def load(self, hero, enemys):
         self.hero = hero
@@ -72,14 +96,17 @@ class Core():
         
         clock = pg.time.Clock()
 
-        self.state = 1
+        self.state = 2
         pg.event.set_allowed([pg.QUIT, pg.KEYUP, pg.KEYDOWN])
-        while self.state == 1:
+        while self.state == 2:
             clock.tick(30)
 
             self.screen.fill((255, 255, 255))
             self.update()
             pg.display.flip()
+
+            if self.hero.health_point <= 0:
+                self.state = 4
 
 class Background(entities.Visible):
     def __init__(self, camera):
@@ -142,7 +169,8 @@ class Camera(pg.sprite.Sprite):
 
 if __name__ == "__main__":
     pg.init()
-    screen = pg.display.set_mode((512,512), pg.SCALED)
+    #screen = pg.display.set_mode((512,512), pg.SCALED)
+    screen = pg.display.set_mode((768,768), pg.SCALED)
     screen.fill((255, 255, 255))
 
     core = Core(screen)

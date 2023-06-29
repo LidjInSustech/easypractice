@@ -27,14 +27,15 @@ class Visible(pg.sprite.Sprite):
         return self.center[0]+ref_x, self.center[1]+ref_y, self.orient - self.camera.orient
 
 class Entity(Visible):
-    def __init__(self, core, x=0, y=0, orient=0):
+    def __init__(self, core, x=0, y=0, orient=0, picture=None):
         super().__init__(core.camera, x, y, orient)
-        #picture = pg.transform.scale(pg.image.load('./res/entity.png'),(48,48)).convert_alpha()
-        picture = pg.Surface((64, 64), flags=pg.SRCALPHA)
-        #picture = pg.Surface((64, 64))
-        pg.draw.circle(picture, (12, 33, 120, 150), (32, 32), 32 - margin)
-        pg.draw.polygon(picture, (250, 25, 55, 200), [(32, margin), (margin*2, 32), (64 - margin*2, 32)])
-        picture = pg.transform.rotate(picture, -90)
+        if picture is None:
+            #picture = pg.transform.scale(pg.image.load('./res/entity.png'),(48,48)).convert_alpha()
+            picture = pg.Surface((64, 64), flags=pg.SRCALPHA)
+            #picture = pg.Surface((64, 64))
+            pg.draw.circle(picture, (12, 33, 120, 150), (32, 32), 32 - margin)
+            pg.draw.polygon(picture, (250, 25, 55, 200), [(32, margin), (margin*2, 32), (64 - margin*2, 32)])
+            picture = pg.transform.rotate(picture, -90)
         self.ori_image = picture
         self.image = self.ori_image
         self.rect = self.image.get_rect()
@@ -42,7 +43,7 @@ class Entity(Visible):
         self.rect.center = self.center
         self.core = core
 
-        self.size = 20
+        self.size = 30
 
         self.health_point = 100
         self.max_hp = 100
