@@ -1,23 +1,24 @@
 import pygame as pg
 import math
 import core
+import entities
 
-class sample_cut(pg.sprite.Sprite):
-    def __init__(self, core, owner, x, y, orient):
-        super().__init__()
+class sample_cut(entities.Visible):
+    def __init__(self, core, owner):
+        super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
+        self.range = 100
         self.owner = owner
-        self.loc_x = x
-        self.loc_y = y
-        self.orient = orient
-        picture = pg.Surface((80, 80))
-        pg.draw.arc(picture, (55,255,55,100), pg.Rect(0,0,80,80), 0, math.pi, width=40)
+        picture = pg.Surface((self.range*2, self.range*2), flags=pg.SRCALPHA)
+        pg.draw.arc(picture, (55,255,55,180), pg.Rect(0, 0, self.range*2, self.range*2), -math.pi/3, math.pi/3, width=int(self.range/2))
         self.ori_image = picture
         self.image = self.ori_image
+        x, y, orient = self.absolute_location()
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.center = self.rect.center
-        self.camera = owner.camera
+        self.image = pg.transform.rotate(self.image, orient)
+        self.rect = self.image.get_rect(center=self.rect.center)
         self.life = 2
+        self.core = core
         core.spaces.add(self)
 
     def update(self):
@@ -26,10 +27,10 @@ class sample_cut(pg.sprite.Sprite):
         if self.life > 0:
             self.life -= 1
         else:
-            for entity in core.entities:
-                if entity != owner:
+            self.core.spaces.remove(self)
+            for entity in self.core.entities:
+                if entity != self.owner:
                     ori1 = math.atan2(entity.loc_y-self.loc_y, entity.loc_x-self.loc_x)
-                    if abs(ori1 - self.orient) < 45:
-                        if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (40+entity.radius)**2:
-                            #entity.hurt(20)
+                    if abs(ori1 - self.orient) < 60:
+                        if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.range+entity.size)**2:
                             entity.health_point -= 20

@@ -6,27 +6,31 @@ import skills
 import math
 
 class Core():
-    def __init__(self):
+    def __init__(self, screen):
+        self.screen = screen
+        self.ori_screen = pg.Surface((screen.get_width(), screen.get_height()*3/2))
+        
         self.pressed = []
 
-        self.camera = Camera()
+        self.camera = Camera(self.ori_screen.get_rect().center)
         self.background = Background(self.camera)
         self.constants = [self.background, self.camera]
     
-        self.hero = entities.Entity(self.camera)
-        self.enemy = entities.Entity(self.camera)
+        self.hero = entities.Entity(self, self.camera)
+        self.enemy = entities.Entity(self, self.camera)
         self.entities = pg.sprite.Group(self.hero, self.enemy)
         self.spaces = pg.sprite.Group()
 
         self.camera.ref = self.hero
 
-    def update(self, screen):
+    def update(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN:
                 self.pressed.append(event.key)
+                self.keypress(event.key)
             elif event.type == pg.KEYUP:
                 self.pressed.remove(event.key)
         self.keyupdate()
@@ -34,42 +38,34 @@ class Core():
         self.camera.update()
 
         self.entities.update()
-        removing = []
-        for entities in self.entities:
-            if entities.health_point == 0:
-                removing.append(entities)
-        for entities in removing:
-            self.entities.remove(entities)
-
         self.spaces.update()
-        removing = []
-        for space in self.spaces:
-            if space.life <= 0:
-                removing.append(space)
-        for space in removing:
-            self.spaces.remove(space)
 
-        screen.blit(self.background.image, self.background.rect)
-        self.spaces.draw(screen)
-        self.entities.draw(screen)
-
+        #screen.blit(self.background.image, self.background.rect)
+        #self.spaces.draw(screen)
+        #self.entities.draw(screen)
+        self.ori_screen.fill((0,0,0))
+        self.ori_screen.blit(self.background.image, self.background.rect)
+        self.spaces.draw(self.ori_screen)
+        self.entities.draw(self.ori_screen)
+        self.screen.blit(pg.transform.scale(self.ori_screen, self.screen.get_rect().size), (0,0))
+        
     def keyupdate(self):
         if pg.K_LEFT in self.pressed:
-            self.hero.effects.append(effects.simple_left_turn(self.hero, 5))
+            self.hero.effects.append(effects.simple_turn(self.hero, 5))
         if pg.K_RIGHT in self.pressed:
-            self.hero.effects.append(effects.simple_right_turn(self.hero, 5))
+            self.hero.effects.append(effects.simple_turn(self.hero, -5))
         if pg.K_UP in self.pressed:
-            self.hero.effects.append(effects.simple_forward(self.hero, 5))
+            self.hero.effects.append(effects.simple_forward(self.hero, 10))
         if pg.K_DOWN in self.pressed:
-            self.hero.effects.append(effects.simple_forward(self.hero, -5))
-        if pg.K_SPACE in self.pressed:
-            skills.sample_cut(self, self.hero, self.hero.loc_x, self.hero.loc_y, self.hero.orient)
+            self.hero.effects.append(effects.simple_forward(self.hero, -10))
 
+    def keypress(self, key):
+        if key == pg.K_SPACE:
+            skills.sample_cut(self, self.hero)
 
-
-class Background(pg.sprite.Sprite):
+class Background(entities.Visible):
     def __init__(self, camera):
-        super().__init__()
+        super().__init__(camera, 0, 0, 0)
         image = pg.image.load('./res/bigBackground.png')
         #image = pg.transform.scale(image,(1024,1024)).convert_alpha()
         image = pg.transform.scale(image,(1024,1024)).convert()
@@ -78,42 +74,30 @@ class Background(pg.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect()
 
-        self.center = pg.display.get_surface().get_rect().center
         self.rect.center = self.center
-        self.camera = camera
-
-        self.loc_x = 0
-        self.loc_y = 0
-        self.orient = 0
 
     def update(self):
         super().update()
-        camera = self.camera
-        rad = math.radians(camera.orient)
-        cos = math.cos(rad)
-        sin = math.sin(rad)
-        dx = self.loc_x - camera.loc_x
-        dy = self.loc_y - camera.loc_y
-        ref_x = cos*dx - sin*dy
-        ref_y = sin*dx + cos*dy
-        self.rect.center = (self.center[0]+ref_x, self.center[1]+ref_y)
+        x, y, orient = self.absolute_location()
+        self.rect.center = (x, y)
 
         #self.image = self.ori_image.copy()
 
-        ref_orient = self.orient - self.camera.orient
-        self.image = pg.transform.rotate(self.ori_image, ref_orient)
+        self.image = pg.transform.rotate(self.ori_image, orient)
         self.rect = self.image.get_rect(center=self.rect.center)
 
 class Camera(pg.sprite.Sprite):
-    def __init__(self, ref = None):
+    def __init__(self, center, ref = None):
         super().__init__()
         
-        self.center = pg.display.get_surface().get_rect().center
+        #self.center = pg.display.get_surface().get_rect().center
+        self.center = center
         self.ref = ref
 
         self.loc_x = 0
         self.loc_y = 0
-        self.orient = 0
+        self.o = 0
+        self.orient = self.o - 90
 
     def update(self):
         super().update()
@@ -121,7 +105,7 @@ class Camera(pg.sprite.Sprite):
             return
         dx = self.loc_x - self.ref.loc_x
         dy = self.loc_y - self.ref.loc_y
-        do = self.orient - self.ref.orient
+        do = self.o - self.ref.orient
         if abs(dx) < 2:
             self.loc_x = self.ref.loc_x
         else:
@@ -133,16 +117,17 @@ class Camera(pg.sprite.Sprite):
             self.loc_y -= dy/2
         
         if abs(do) < 30:
-            self.orient = self.ref.orient
+            self.o = self.ref.orient
         else:
-            self.orient -= do/2
+            self.o -= do/2
+        self.orient = self.o - 90
 
 if __name__ == "__main__":
     pg.init()
     screen = pg.display.set_mode((512,512), pg.SCALED)
     screen.fill((255, 255, 255))
 
-    core = Core()
+    core = Core(screen)
     clock = pg.time.Clock()
 
     going = True
@@ -151,7 +136,7 @@ if __name__ == "__main__":
         clock.tick(30)
 
         screen.fill((255, 255, 255))
-        core.update(screen)
+        core.update()
         pg.display.flip()
 
     pg.quit()
