@@ -3,10 +3,10 @@ import core
 import entities
 import effects
 import skills
-import math
 
 class Core():
     def __init__(self, screen):
+        self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:finished
         self.screen = screen
         self.ori_screen = pg.Surface((screen.get_width(), screen.get_height()*3/2))
         
@@ -14,14 +14,11 @@ class Core():
 
         self.camera = Camera(self.ori_screen.get_rect().center)
         self.background = Background(self.camera)
-        self.constants = [self.background, self.camera]
     
-        self.hero = entities.Entity(self, self.camera)
-        self.enemy = entities.Entity(self, self.camera)
-        self.entities = pg.sprite.Group(self.hero, self.enemy)
+        #self.hero = entities.Entity(self, self.camera)
+        #self.enemy = entities.Entity(self, self.camera)
+        self.entities = None
         self.spaces = pg.sprite.Group()
-
-        self.camera.ref = self.hero
 
     def update(self):
         for event in pg.event.get():
@@ -62,6 +59,27 @@ class Core():
     def keypress(self, key):
         if key == pg.K_SPACE:
             skills.sample_cut(self, self.hero)
+
+    def load(self, hero, enemys):
+        self.hero = hero
+        self.entities = pg.sprite.Group(self.hero, *enemys)
+        self.camera.ref = self.hero
+        self.state = 1
+
+    def start(self):
+        if self.state == 0:
+            raise Exception('Core not prepared')
+        
+        clock = pg.time.Clock()
+
+        self.state = 1
+        pg.event.set_allowed([pg.QUIT, pg.KEYUP, pg.KEYDOWN])
+        while self.state == 1:
+            clock.tick(30)
+
+            self.screen.fill((255, 255, 255))
+            self.update()
+            pg.display.flip()
 
 class Background(entities.Visible):
     def __init__(self, camera):
@@ -128,15 +146,7 @@ if __name__ == "__main__":
     screen.fill((255, 255, 255))
 
     core = Core(screen)
-    clock = pg.time.Clock()
-
-    going = True
-    pg.event.set_allowed([pg.QUIT, pg.KEYUP, pg.KEYDOWN])
-    while going:
-        clock.tick(30)
-
-        screen.fill((255, 255, 255))
-        core.update()
-        pg.display.flip()
+    core.load(entities.Entity(core, 0, 0, 0), [entities.Entity(core, 100, 100, 0)])
+    core.start()
 
     pg.quit()

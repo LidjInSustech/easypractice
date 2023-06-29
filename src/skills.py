@@ -1,6 +1,5 @@
 import pygame as pg
 import math
-import core
 import entities
 
 class sample_cut(entities.Visible):
@@ -30,7 +29,7 @@ class sample_cut(entities.Visible):
             self.core.spaces.remove(self)
             for entity in self.core.entities:
                 if entity != self.owner:
-                    ori1 = math.atan2(entity.loc_y-self.loc_y, entity.loc_x-self.loc_x)
-                    if abs(ori1 - self.orient) < 60:
+                    ori1 = math.degrees(math.atan2(entity.loc_y-self.loc_y, entity.loc_x-self.loc_x))
+                    if (ori1 - self.orient)%360 < 60 or (ori1 - self.orient)%360 > 300:
                         if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.range+entity.size)**2:
                             entity.health_point -= 20

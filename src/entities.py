@@ -14,6 +14,8 @@ class Visible(pg.sprite.Sprite):
         self.center = self.camera.center
 
     def absolute_location(self):
+        if self.camera is None:
+            raise Exception('Camera is not set')
         camera = self.camera
         rad = math.radians(camera.orient)
         cos = math.cos(rad)
@@ -25,8 +27,8 @@ class Visible(pg.sprite.Sprite):
         return self.center[0]+ref_x, self.center[1]+ref_y, self.orient - self.camera.orient
 
 class Entity(Visible):
-    def __init__(self, core, camera):
-        super().__init__(camera, 0, 0, 0)
+    def __init__(self, core, x=0, y=0, orient=0):
+        super().__init__(core.camera, x, y, orient)
         #picture = pg.transform.scale(pg.image.load('./res/entity.png'),(48,48)).convert_alpha()
         picture = pg.Surface((64, 64), flags=pg.SRCALPHA)
         #picture = pg.Surface((64, 64))
