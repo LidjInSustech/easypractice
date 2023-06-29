@@ -35,18 +35,19 @@ class sample_cut(entities.Visible):
 
 class fire_boll(entities.Entity):
     def __init__(self, owner):
-        picture = pg.Surface((24, 24), flags=pg.SRCALPHA)
-        pg.draw.circle(picture, (255, 0, 0, 200), (12, 12), 12)
-        pg.draw.circle(picture, (255, 255, 0, 200), (12, 12), 6)       
+        image_size = 32
+        picture = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
+        pg.draw.circle(picture, (255, 0, 0, 200), (image_size, image_size), image_size)
+        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size/2)       
         super().__init__(owner.core, owner.loc_x, owner.loc_y, owner.orient, picture)
-        self.end_image = pg.Surface((24, 24), flags=pg.SRCALPHA)
-        pg.draw.circle(self.end_image, (0,0,0,100), (12, 12), 12)
+        self.end_image = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
+        pg.draw.circle(self.end_image, (0,0,0,100), (image_size, image_size), image_size)
         self.core = owner.core
         self.owner = owner
         self.speed = 10
-        self.range = 80
+        self.range = image_size
         self.life = 60
-        self.size = 20
+        self.size = image_size*2
         self.health_point = 10
         self.max_hp = 10
 
