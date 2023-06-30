@@ -1,5 +1,6 @@
 import pygame as pg
-import configIO
+import util
+from util import Button
 
 norm = [['up','down','left','right','turn left','turn right','fast mode'],['alter arm','skill1','skill2','skill3','skill4','skill5','skill6']]
 
@@ -37,11 +38,13 @@ class KeySetting():
             for row in range(len(norm[0])):
                 if norm[col][row] not in self.config:
                     self.config[norm[col][row]] = None
-                col_list.append(Button(norm[col][row], self.config[norm[col][row]], pg.Rect(margin + (width + margin) * col, margin + (height + margin) * row, width, height)))
+                text = norm[col][row]
+                text = ''.join((text.ljust(10, ' '),':',pg.key.name(self.config[text]).rjust(10, ' ') if self.config[text] is not None else 'None'.rjust(10, ' ')))
+                col_list.append(Button(text, pg.Rect(margin + (width + margin) * col, margin + (height + margin) * row, width, height)))
             self.buttons.append(col_list)
 
-        self.buttons[0].append(Default_button('Default', pg.Rect(margin + (width + margin) * 0, margin + (height + margin) * 7, width, height)))
-        self.buttons[1].append(Default_button('OK', pg.Rect(margin + (width + margin) * 1, margin + (height + margin) * 7, width, height)))
+        self.buttons[0].append(Button('Default', pg.Rect(margin + (width + margin) * 0, margin + (height + margin) * 7, width, height)))
+        self.buttons[1].append(Button('OK', pg.Rect(margin + (width + margin) * 1, margin + (height + margin) * 7, width, height)))
 
     def draw(self):
         self.screen.fill((0,0,0))
@@ -91,7 +94,11 @@ class KeySetting():
                             while True:
                                 event = pg.event.wait()
                                 if event.type == pg.KEYDOWN:
-                                    self.buttons[self.c_col][self.c_row] = Button(norm[self.c_col][self.c_row], event.key, self.buttons[self.c_col][self.c_row].rect)
+                                    if event.key == pg.K_ESCAPE:
+                                        break
+                                    text = norm[self.c_col][self.c_row]
+                                    text = ''.join((text.ljust(10, ' '),':',pg.key.name(event.key).rjust(10, ' ') if key is not None else 'None'.rjust(10, ' ')))
+                                    self.buttons[self.c_col][self.c_row] = Button(text, self.buttons[self.c_col][self.c_row].rect)
                                     self.config[norm[self.c_col][self.c_row]] = event.key
                                     self.write_config()
                                     self.draw()
@@ -102,57 +109,19 @@ class KeySetting():
     def read_config(self):
         #with open('configure/key_setting.json', 'r') as f:
         #    self.config = json.load(f)
-        self.config = configIO.read_config('key_setting.json')
+        self.config = util.read_config('key_setting.json')
     
     def write_config(self):
         #with open('configure/key_setting.json', 'w') as f:
         #    json.dump(self.config, f, indent=4)
-        configIO.write_config('key_setting.json', self.config)
+        util.write_config('key_setting.json', self.config)
 
     def default_config(self):
         #with open('configure/key_default.json', 'r') as f:
         #    self.config = json.load(f)
         #with open('configure/key_setting.json', 'w') as f:
         #    json.dump(self.config, f, indent=4)
-        configIO.write_config('key_setting.json', configIO.read_config('key_default.json'))
-            
-
-class Button():
-    def __init__(self, text, key, rect):
-        self.text = str(text).ljust(10, ' ')
-        self.key = pg.key.name(key).rjust(10, ' ') if key is not None else 'None'.rjust(10, ' ')
-        self.rect = rect
-        font = pg.font.SysFont('Calibri', int(rect.height/2))
-        font = font.render(f'{self.text}:{self.key}', True, (255,255,255), (0,0,0))
-        font.set_colorkey((0,0,0))
-        font_rect = font.get_rect()
-        
-        self.up_image = pg.Surface((rect.width, rect.height))
-        self.up_image.fill((64,32,16))
-        font_rect.center = self.up_image.get_rect().center
-        self.up_image.blit(font, font_rect)
-
-        self.down_image = pg.Surface((rect.width, rect.height))
-        self.down_image.fill((32,64,128))
-        self.down_image.blit(font, font_rect)
-
-class Default_button():
-    def __init__(self, text, rect):
-        self.text = str(text)
-        self.rect = rect
-        font = pg.font.SysFont('Calibri', int(rect.height/2))
-        font = font.render(text, True, (255,255,255), (0,0,0))
-        font.set_colorkey((0,0,0))
-        font_rect = font.get_rect()
-        
-        self.up_image = pg.Surface((rect.width, rect.height))
-        self.up_image.fill((64,32,16))
-        font_rect.center = self.up_image.get_rect().center
-        self.up_image.blit(font, font_rect)
-
-        self.down_image = pg.Surface((rect.width, rect.height))
-        self.down_image.fill((32,64,128))
-        self.down_image.blit(font, font_rect)
+        util.write_config('key_setting.json', util.read_config('key_default.json'))
 
 if __name__ == '__main__':
     pg.init()

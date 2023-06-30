@@ -6,7 +6,7 @@ import entities
 if __name__ == "__main__":
     pg.init()
     #screen = pg.display.set_mode((512,512), pg.SCALED)
-    screen = pg.display.set_mode((640,640), pg.SCALED)
+    screen = pg.display.set_mode((1280,640), pg.SCALED)
     screen.fill((255, 255, 255))
 
     core = core.Core(screen)

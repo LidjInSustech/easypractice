@@ -3,7 +3,7 @@ import entities
 import effects
 import skills
 import math
-import configIO
+import util
 
 class Core():
     def __init__(self, screen):
@@ -126,7 +126,7 @@ class Core():
         self.state = 1
 
     def start(self):
-        self.keys = configIO.read_config('key_setting.json')
+        self.keys = util.read_config('key_setting.json')
 
         if self.state == 0:
             raise Exception('Core not prepared')

@@ -47,7 +47,9 @@ class simple_turn(base_move):
 class icon(effect):
     def __init__(self, life):
         super().__init__(life)
-        self.image = pg.font.SysFont('Calibri', 32).render('E', False, (255, 255, 255), (0, 0, 0))
+        self.image = pg.Surface((16,16))
+        self.image.fill((0,0,0))
+        pg.draw.circle(self.image, (255,255,255), (8,8), 6)
 
 class unmovable(icon):
     def __init__(self, life):
