@@ -38,8 +38,10 @@ class fire_boll(entities.Entity):
         image_size = 32
         picture = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
         pg.draw.circle(picture, (255, 0, 0, 200), (image_size, image_size), image_size)
-        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size/2)       
-        super().__init__(owner.core, owner.loc_x, owner.loc_y, owner.orient, picture)
+        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size/2)
+        x_forward = math.cos(math.radians(owner.orient))*image_size*2 + owner.loc_x
+        y_forward = math.sin(math.radians(owner.orient))*image_size*2 + owner.loc_y
+        super().__init__(owner.core, x_forward, y_forward, owner.orient, picture)
         self.end_image = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
         pg.draw.circle(self.end_image, (0,0,0,100), (image_size, image_size), image_size)
         self.core = owner.core
@@ -47,7 +49,7 @@ class fire_boll(entities.Entity):
         self.speed = 10
         self.range = image_size
         self.life = 60
-        self.size = image_size*2
+        self.size = image_size
         self.health_point = 10
         self.max_hp = 10
 
