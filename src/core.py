@@ -27,10 +27,12 @@ class Core():
                 pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN:
-                self.pressed.append(event.key)
+                if event.key not in self.pressed:
+                    self.pressed.append(event.key)
                 self.keypress(event.key)
             elif event.type == pg.KEYUP:
-                self.pressed.remove(event.key)
+                if event.key in self.pressed:
+                    self.pressed.remove(event.key)
         self.keyupdate()
         self.background.update()
         self.camera.update()

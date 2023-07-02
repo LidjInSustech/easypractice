@@ -97,7 +97,7 @@ class KeySetting():
                                     if event.key == pg.K_ESCAPE:
                                         break
                                     text = norm[self.c_col][self.c_row]
-                                    text = ''.join((text.ljust(10, ' '),':',pg.key.name(event.key).rjust(10, ' ') if key is not None else 'None'.rjust(10, ' ')))
+                                    text = ''.join((text.ljust(10, ' '),':',pg.key.name(event.key).rjust(10, ' ') if event.key is not None else 'None'.rjust(10, ' ')))
                                     self.buttons[self.c_col][self.c_row] = Button(text, self.buttons[self.c_col][self.c_row].rect)
                                     self.config[norm[self.c_col][self.c_row]] = event.key
                                     self.write_config()
