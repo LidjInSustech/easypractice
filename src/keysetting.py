@@ -17,8 +17,8 @@ class KeySetting():
 
         self.running = True
 
-        font = pg.font.SysFont('Calibri', 28)
-        font = font.render('Press any key:', True, (255,255,255), (0,0,0))
+        font = util.get_font(28)
+        font = font.render(util.get_word('Press any key:'), True, (255,255,255), (0,0,0))
         font.set_colorkey((0,0,0))
         font_rect = font.get_rect()
         wait_image = pg.Surface((self.rect.width/2, self.rect.height/2))
@@ -77,14 +77,14 @@ class KeySetting():
                         self.c_col = (self.c_col + 1) % len(self.buttons)
                         #self.c_row = 0
                     if event.key == pg.K_RETURN:
-                        if self.buttons[self.c_col][self.c_row].text == 'Default':
+                        if self.c_col == 0 and self.c_row == 7:
                             self.default_config()
                             self.read_config()
                             self.load_buttons()
                             self.draw()
                             #self.running = False
                             break
-                        elif self.buttons[self.c_col][self.c_row].text == 'OK':
+                        elif self.c_col == 1 and self.c_row == 7:
                             #self.write_config()
                             self.running = False
                             break

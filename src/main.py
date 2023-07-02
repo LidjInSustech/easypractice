@@ -10,7 +10,7 @@ class main_page():
         self.rect = self.screen.get_rect()
         picture = pg.Surface((self.rect.width/2, self.rect.height))
         picture.fill((255, 255, 255))
-        picture.blit(util.get_font(28).render('beginning', True, (0,0,0)), (20, 20))
+        picture.blit(util.get_font(28).render(util.get_word('Welcome to the game!'), True, (0,0,0)), (20, 20))
         self.beginning = picture
         self.curser = 0
         self.load_buttons()
@@ -25,7 +25,7 @@ class main_page():
         pg.display.update()
 
     def load_buttons(self):
-        buttons = ['start', 'alter skill', 'alter weapon', 'set keys', 'exit']
+        buttons = ['start', 'alter skills', 'alter weapons', 'set keys', 'exit']
         margin = 10
         width = (self.rect.width - margin)/2 - margin
         height = (self.rect.height - margin)/len(buttons) - margin
@@ -58,10 +58,10 @@ class main_page():
                             return 'start'
                         if self.curser == 1:
                             self.running = False
-                            return 'alter skill'
+                            return 'alter skills'
                         if self.curser == 2:
                             self.running = False
-                            return 'alter weapon'
+                            return 'alter weapons'
                         if self.curser == 3:
                             self.running = False
                             return 'set keys'
@@ -71,6 +71,7 @@ class main_page():
 
 if __name__ == "__main__":
     pg.init()
+    util.init()
     #screen = pg.display.set_mode((512,512), pg.SCALED)
     screen = pg.display.set_mode((1280,640), pg.SCALED)
     pg.display.set_caption('Game')
@@ -86,9 +87,9 @@ if __name__ == "__main__":
             #core = core.Core(screen)
             #core.load(entities.Entity(core, 0, 0, 0), [entities.Entity(core, 100, 100, 0)])
             core.start()
-        if massage == 'alter skill':
+        if massage == 'alter skills':
             pass
-        if massage == 'alter weapon':
+        if massage == 'alter weapons':
             pass
         if massage == 'set keys':
             keysetting.KeySetting().start()

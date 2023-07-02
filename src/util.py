@@ -2,6 +2,25 @@ import json
 import os
 import pygame as pg
 
+config = None
+language = None
+
+def init():
+    global font, config, language
+    config = read_config('config.json')
+    if config['language'] == 'en':
+        language = {}
+    else:
+        with open('data/lang/{}.json'.format(config['language']), 'r') as f:
+            language = json.load(f)
+
+def get_word(text):
+    global language
+    if text in language.keys():
+        return language[text]
+    else:
+        return text
+
 def read_config(filename):
     filename = os.path.join('configure', filename)
     with open(filename, 'r') as f:
@@ -15,10 +34,16 @@ def write_config(filename, config):
     return config
 
 def get_font(size):
-    return pg.font.SysFont('Calibri', size)
+    try:
+        return pg.font.SysFont(config['font'], int(size*config['font_size']))
+    except:
+        return pg.font.SysFont('Calibri', size)
 
 class Button():
     def __init__(self, text, rect):
+        global language
+        if text in language.keys():
+            text = language[text]
         self.text = text
         self.rect = rect
         font = get_font(int(rect.height/2))
