@@ -38,7 +38,7 @@ class fire_boll(entities.Entity):
         image_size = 32
         picture = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
         pg.draw.circle(picture, (255, 0, 0, 200), (image_size, image_size), image_size)
-        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size/2)
+        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size//2)
         x_forward = math.cos(math.radians(owner.orient))*image_size*2 + owner.loc_x
         y_forward = math.sin(math.radians(owner.orient))*image_size*2 + owner.loc_y
         super().__init__(owner.core, x_forward, y_forward, owner.orient, picture)

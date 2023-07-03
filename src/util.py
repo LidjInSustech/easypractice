@@ -59,3 +59,60 @@ class Button():
         self.down_image = pg.Surface((rect.width, rect.height))
         self.down_image.fill((32,64,128))
         self.down_image.blit(font, font_rect)
+
+class Button_Box():
+    def __init__(self, rect, button_names):
+        self.screen = pg.display.get_surface()
+        self.rect = rect
+        self.curser = 0
+        self.load_buttons(button_names)  
+
+    def draw(self):
+        for button in self.buttons:
+            self.screen.blit(button.up_image, button.rect)
+        self.screen.blit(self.buttons[self.curser].down_image, self.buttons[self.curser].rect)
+        pg.display.update()
+
+    def load_buttons(self, button_names):
+        margin = 10
+        width = (self.rect.width - margin)//2 - margin
+        height = (self.rect.height - margin)//len(button_names) - margin
+
+        self.buttons = []
+        for row in range(len(button_names)):
+            self.buttons.append(Button(button_names[row], pg.Rect(margin, margin + (height + margin) * row, width, height)))
+
+    def start(self):
+        self.running = True
+        clock = pg.time.Clock()
+        while self.running:
+            clock.tick(60)
+            self.draw()
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    self.running = False
+                    return -1
+                if event.type == pg.KEYDOWN:
+                    if event.key == pg.K_ESCAPE:
+                        self.running = False
+                        return -1
+                    if event.key == pg.K_DOWN:
+                        self.curser = (self.curser + 1) % len(self.buttons)
+                    if event.key == pg.K_UP:
+                        self.curser = (self.curser - 1) % len(self.buttons)
+                    if event.key == pg.K_RETURN:
+                        self.running = False
+                        return self.curser
+
+class Menu_Page(Button_Box):
+    def __init__(self, button_names, picture, picture_rect):
+        rect = pg.display.get_surface().get_rect()
+        rect.width = rect.width // 2
+        super().__init__(rect, button_names)
+        self.picture = picture
+        self.picture_rect = picture_rect
+
+    def draw(self):
+        self.screen.fill((0,0,0))
+        self.screen.blit(self.picture, self.picture_rect)
+        super().draw()

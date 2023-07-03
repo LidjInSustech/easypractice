@@ -21,7 +21,7 @@ class KeySetting():
         font = font.render(util.get_word('Press any key:'), True, (255,255,255), (0,0,0))
         font.set_colorkey((0,0,0))
         font_rect = font.get_rect()
-        wait_image = pg.Surface((self.rect.width/2, self.rect.height/2))
+        wait_image = pg.Surface((self.rect.width//2, self.rect.height//2))
         wait_image.fill((99,123,45))
         font_rect.center = wait_image.get_rect().center
         wait_image.blit(font, font_rect)
@@ -29,8 +29,8 @@ class KeySetting():
 
     def load_buttons(self):
         margin = 10
-        width = (self.rect.width - margin)/2 - margin
-        height = (self.rect.height - margin)/8 - margin
+        width = (self.rect.width - margin)//2 - margin
+        height = (self.rect.height - margin)//8 - margin
 
         self.buttons = []
         for col in range(len(norm)):
@@ -89,7 +89,7 @@ class KeySetting():
                             self.running = False
                             break
                         else:
-                            self.screen.blit(self.wait_image, (self.rect.width/4, self.rect.height/4))
+                            self.screen.blit(self.wait_image, (self.rect.width//4, self.rect.height//4))
                             pg.display.update()
                             while True:
                                 event = pg.event.wait()

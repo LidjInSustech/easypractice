@@ -9,7 +9,7 @@ class Core():
     def __init__(self, screen):
         self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:finished
         self.screen = screen
-        self.ori_screen = pg.Surface((screen.get_width(), screen.get_height()*3/2))
+        self.ori_screen = pg.Surface((screen.get_width(), int(screen.get_height()*2)))
         
         self.pressed = []
 
@@ -75,12 +75,12 @@ class Core():
         self.screen.blit(head, (4,4))
         width = 8
         leftlimit = 32+8
-        rightlimit = self.screen.get_width()*2/5
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point/self.hero.max_hp)
+        rightlimit = self.screen.get_width()*2//5
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point//self.hero.max_hp)
         margin = 8
         pg.draw.line(self.screen, (255,0,0,100), (leftlimit, margin), (point, margin), width)
         pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point/self.hero.max_mp)
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point//self.hero.max_mp)
         margin = 20
         pg.draw.line(self.screen, (0,0,255,100), (leftlimit, margin), (point, margin), width)
         pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
@@ -92,8 +92,8 @@ class Core():
                 count += 1
 
     def solve_collision(self):
-        x_limit = self.background.ori_image.get_rect().width/2
-        y_limit = self.background.ori_image.get_rect().height/2
+        x_limit = self.background.ori_image.get_rect().width//2
+        y_limit = self.background.ori_image.get_rect().height//2
         for entity in self.entities:
             x, y, orient = entity.loc_x, entity.loc_y, entity.orient
             if x < -x_limit:
