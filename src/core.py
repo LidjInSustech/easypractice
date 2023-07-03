@@ -4,10 +4,12 @@ import effects
 import skills
 import math
 import util
+import keysetting
 
 class Core():
-    def __init__(self, screen):
-        self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:finished
+    def __init__(self):
+        self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:loss
+        screen = pg.display.get_surface()
         self.screen = screen
         self.ori_screen = pg.Surface((screen.get_width(), int(screen.get_height()*2)))
         
@@ -64,6 +66,23 @@ class Core():
     def keypress(self, key):
         if key == pg.K_ESCAPE:
             self.state = 3
+            menu = util.Button_Box(self.screen.get_rect(), ['continue', 'set keys', 'settings', 'main page', 'exit'])
+            self.screen.fill((0,0,0))
+            message = menu.start()
+            while message == 1 or message == 2:
+                if message == 1:
+                    keysetting.KeySetting().start()
+                    self.keys = util.read_config('key_setting.json')
+                self.screen.fill((0,0,0))
+                message = menu.start()
+            if message < 1:
+                self.state = 2
+                return
+            if message == 3:
+                return
+            if message == 4:
+                pg.quit()
+                exit()
         if key == self.keys['skill1']:
             skills.sample_cut(self.hero)
         if key == self.keys['skill2']:
