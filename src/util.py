@@ -4,6 +4,7 @@ import pygame as pg
 
 config = None
 language = None
+loading_image = None
 
 def init():
     global font, config, language
@@ -66,6 +67,15 @@ def load_image_alpha(filename, hight, width):
     image = image.convert_alpha()
     image = pg.transform.scale(image, (hight, width))
     return image
+
+def loading_page():
+    global loading_image
+    if loading_image == None:
+        font = get_font(32)
+        loading_image = font.render(get_word('loading...'), True, (50, 100, 150))
+    pg.display.get_surface().blit(loading_image, (0,0))
+    pg.display.update()
+
 
 class Button():
     def __init__(self, text, rect):
