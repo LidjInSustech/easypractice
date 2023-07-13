@@ -171,7 +171,7 @@ class Background(entities.Visible):
         super().__init__(camera, 0, 0, 0)
         #image = pg.image.load('./res/bigBackground.png')
         #image = pg.transform.scale(image,(1024,1024)).convert_alpha()
-        image = util.load_image('floor/bigBackground.png', 1024, 1024)
+        image = util.load_image('floor/bigBackground.png', 1024, 1024, (0,0,0))
         if image is None:
             image = pg.Surface((1024,1024))
         #image = pg.transform.scale(image,(1024,1024)).convert()

@@ -110,6 +110,7 @@ class Button_Box():
         self.load_buttons(button_names)  
 
     def draw(self):
+        self.screen.fill((0,0,0))
         for button in self.buttons:
             self.screen.blit(button.up_image, button.rect)
         self.screen.blit(self.buttons[self.curser].down_image, self.buttons[self.curser].rect)
