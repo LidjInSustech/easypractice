@@ -40,6 +40,34 @@ def get_font(size):
     except:
         return pg.font.SysFont('Calibri', size)
 
+def load_image(filename, hight, width, colorkey=None):
+    filename = os.path.join('res', filename)
+    try:
+        image = pg.image.load(filename)
+    except pg.error:
+        print('Cannot load image:', filename)
+        raise SystemExit(str(get_word('Could not load image')))
+        return None
+    image = image.convert()
+    if colorkey is not None:
+        if colorkey == -1:
+            colorkey = image.get_at((0,0))
+        image.set_colorkey(colorkey)
+    image = pg.transform.scale(image, (hight, width))
+    return image
+
+def load_image_alpha(filename, hight, width):
+    filename = os.path.join('res', filename)
+    try:
+        image = pg.image.load(filename)
+    except pg.error:
+        print('Cannot load image:', filename)
+        raise SystemExit(str(get_word('Could not load image')))
+        return None
+    image = image.convert_alpha()
+    image = pg.transform.scale(image, (hight, width))
+    return image
+
 def loading_page():
     global loading_image
     if loading_image == None:
@@ -47,6 +75,7 @@ def loading_page():
         loading_image = font.render(get_word('loading...'), True, (50, 100, 150))
     pg.display.get_surface().blit(loading_image, (0,0))
     pg.display.update()
+
 
 class Button():
     def __init__(self, text, rect):
@@ -56,17 +85,21 @@ class Button():
         self.text = text
         self.rect = rect
         font = get_font(int(rect.height/2))
-        font = font.render(text, True, (255,255,255), (0,0,0))
+        font = font.render(text, True, (251,254,110), (0,0,0))
         font.set_colorkey((0,0,0))
         font_rect = font.get_rect()
         
-        self.up_image = pg.Surface((rect.width, rect.height))
-        self.up_image.fill((64,32,16))
+        self.up_image = load_image_alpha('basic/button_up.png', rect.width, rect.height)
+        if self.up_image is None:
+            self.up_image = pg.Surface((rect.width, rect.height))
+            self.up_image.fill((64,32,16))
         font_rect.center = self.up_image.get_rect().center
         self.up_image.blit(font, font_rect)
 
-        self.down_image = pg.Surface((rect.width, rect.height))
-        self.down_image.fill((32,64,128))
+        self.down_image = load_image_alpha('basic/button_down.png', rect.width, rect.height)
+        if self.down_image is None:
+            self.down_image = pg.Surface((rect.width, rect.height))
+            self.down_image.fill((32,64,128))
         self.down_image.blit(font, font_rect)
 
 class Button_Box():
