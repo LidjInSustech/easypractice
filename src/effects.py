@@ -44,6 +44,19 @@ class simple_turn(base_move):
             return
         self.owner.orient += self.speed
 
+class simple_slide(base_move):
+    '''positive speed for right'''
+    def __init__(self, owner, speed):
+        super().__init__()
+        self.owner = owner
+        self.speed = speed
+    def update(self):
+        self.life = 0
+        if not self.movable():
+            return
+        self.owner.loc_x += self.speed * math.sin(math.radians(self.owner.orient))
+        self.owner.loc_y -= self.speed * math.cos(math.radians(self.owner.orient))
+
 class icon(effect):
     def __init__(self, life):
         super().__init__(life)
@@ -56,5 +69,9 @@ class unmovable(icon):
         super().__init__(life)
 
 class unstable(icon):
+    def __init__(self, life):
+        super().__init__(life)
+
+class escaping(icon):
     def __init__(self, life):
         super().__init__(life)

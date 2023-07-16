@@ -2,6 +2,29 @@ import pygame as pg
 import math
 import entities
 import effects
+import sub_skill
+
+class basic():
+    def act(self, owner, keys, ref):
+        return
+
+class fast_move(basic):
+    def __init__(self):
+        picture = pg.Surface((16,16))
+        picture.set_colorkey((0,0,0))
+        pg.draw.line(picture, (255,255,255),(8,8),(0,8),3)
+        self.picture = picture
+
+    def act(self, owner, keys, ref):
+        if any([isinstance(effect, effects.unmovable) or isinstance(effect, effects.unstable) for effect in owner.effects]):
+            return
+        if ref['up'] in keys:
+            sub_skill.fast_forward(owner, self.picture, owner.speed*4)
+
+    def act_withkey(self, owner, key, ref):
+        if key == ref['up']:
+            sub_skill.fast_forward(owner, self.picture, owner.speed*4)
+
 
 class sample_cut(entities.Visible):
     def __init__(self, owner):

@@ -71,8 +71,12 @@ def load_image_alpha(filename, hight, width):
 def loading_page():
     global loading_image
     if loading_image == None:
+        loading_image = load_image('basic/loading_page.png', pg.display.get_surface().get_width(), pg.display.get_surface().get_height())
+        if loading_image == None:
+            loading_image = pg.Surface((pg.display.get_surface().get_width(), pg.display.get_surface().get_height()))
         font = get_font(32)
-        loading_image = font.render(get_word('loading...'), True, (50, 100, 150))
+        #loading_image = font.render(get_word('loading...'), True, (50, 100, 150))
+        loading_image.blit(font.render(get_word('loading...'), True, (50, 100, 150)), (20,20))
     pg.display.get_surface().blit(loading_image, (0,0))
     pg.display.update()
 
@@ -103,14 +107,17 @@ class Button():
         self.down_image.blit(font, font_rect)
 
 class Button_Box():
-    def __init__(self, rect, button_names):
+    def __init__(self, rect, button_names, picture=None):
         self.screen = pg.display.get_surface()
         self.rect = rect
         self.curser = 0
-        self.load_buttons(button_names)  
+        self.load_buttons(button_names)
+        self.picture = picture
 
     def draw(self):
         self.screen.fill((0,0,0))
+        if self.picture is not None:
+            self.screen.blit(self.picture, self.picture.get_rect())
         for button in self.buttons:
             self.screen.blit(button.up_image, button.rect)
         self.screen.blit(self.buttons[self.curser].down_image, self.buttons[self.curser].rect)

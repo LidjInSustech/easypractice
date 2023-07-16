@@ -55,13 +55,17 @@ class Core():
         
     def keyupdate(self):
         if self.keys['turn left'] in self.pressed:
-            self.hero.effects.append(effects.simple_turn(self.hero, 5))
+            self.hero.effects.append(effects.simple_turn(self.hero, self.hero.speed))
         if self.keys['turn right'] in self.pressed:
-            self.hero.effects.append(effects.simple_turn(self.hero, -5))
+            self.hero.effects.append(effects.simple_turn(self.hero, -self.hero.speed))
         if self.keys['up'] in self.pressed:
             self.hero.effects.append(effects.simple_forward(self.hero, 10))
         if self.keys['down'] in self.pressed:
             self.hero.effects.append(effects.simple_forward(self.hero, -10))
+        if self.keys['left'] in self.pressed:
+            self.hero.effects.append(effects.simple_slide(self.hero, -self.hero.speed))
+        if self.keys['right'] in self.pressed:
+            self.hero.effects.append(effects.simple_slide(self.hero, self.hero.speed))
 
     def keypress(self, key):
         if key == pg.K_ESCAPE:
@@ -87,6 +91,11 @@ class Core():
             skills.sample_cut(self.hero)
         if key == self.keys['skill2']:
             skills.fire_boll(self.hero)
+        #fast move
+        if key == self.keys['fast mode']:
+            self.hero.skills[0].act(self.hero, self.pressed, self.keys)
+        elif self.keys['fast mode'] in self.pressed:
+            self.hero.skills[0].act_withkey(self.hero, key, self.keys)
 
     def drawUI(self):
         head = pg.transform.scale(self.hero.ori_image,(32,32))
@@ -95,11 +104,11 @@ class Core():
         width = 8
         leftlimit = 32+8
         rightlimit = self.screen.get_width()*2//5
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point//self.hero.max_hp)
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point/self.hero.max_hp)
         margin = 8
         pg.draw.line(self.screen, (255,0,0,100), (leftlimit, margin), (point, margin), width)
         pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point//self.hero.max_mp)
+        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point/self.hero.max_mp)
         margin = 20
         pg.draw.line(self.screen, (0,0,255,100), (leftlimit, margin), (point, margin), width)
         pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
@@ -161,10 +170,21 @@ class Core():
 
             self.screen.fill((255, 255, 255))
             self.update()
+            self.check_finish()
             pg.display.flip()
 
-            if self.hero.health_point <= 0:
-                self.state = 4
+    def check_finish(self):
+        p1 = False
+        p2 = False
+        for entity in self.entities:
+            if entity.party == 1:
+                p1 = True
+            if entity.party == 2:
+                p2 = True
+        if p1 == False:
+            self.state = 5
+        if p2 == False:
+            self.state = 4
 
 class Background(entities.Visible):
     def __init__(self, camera):

@@ -49,11 +49,19 @@ class Entity(Visible):
         self.max_hp = 100
         self.magis_point = 100
         self.max_mp = 100
+        self.mp_recovery = 1
+        self.speed = 5
+        self.party = 0
         self.effects = []
 
     def update(self):
         super().update()
-        
+
+        self.magis_point += self.mp_recovery
+        if self.health_point > self.max_hp:
+            self.health_point = self.max_hp
+        if self.magis_point > self.max_mp:
+            self.magis_point = self.max_mp
         if self.health_point <= 0:
             self.core.entities.remove(self)
         
@@ -77,3 +85,8 @@ class Entity(Visible):
 
         self.image = pg.transform.rotate(self.image, orient)
         self.rect = self.image.get_rect(center=self.rect.center)
+
+class Prepared_entity(Entity):
+    def __init__(self, core, skills, x=0, y=0, orient=0, picture=None):
+        super().__init__(core, x, y, orient, picture)
+        self.skills = skills

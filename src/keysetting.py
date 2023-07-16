@@ -26,6 +26,7 @@ class KeySetting():
         font_rect.center = wait_image.get_rect().center
         wait_image.blit(font, font_rect)
         self.wait_image = wait_image
+        self.image = util.load_image('basic/loading_page.png', self.rect.width, self.rect.height)
 
     def load_buttons(self):
         margin = 10
@@ -47,7 +48,10 @@ class KeySetting():
         self.buttons[1].append(Button('OK', pg.Rect(margin + (width + margin) * 1, margin + (height + margin) * 7, width, height)))
 
     def draw(self):
-        self.screen.fill((0,0,0))
+        if self.image is not None:
+            self.screen.blit(self.image, self.image.get_rect())
+        else:
+            self.screen.fill((0,0,0))
         for col in self.buttons:
             for button in col:
                 self.screen.blit(button.up_image, button.rect)
