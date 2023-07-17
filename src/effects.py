@@ -2,19 +2,20 @@ import pygame as pg
 import math
 
 class effect():
-    def __init__(self, life):
+    def __init__(self, eid, life):
+        self.eid = eid
         self.life = life
     def update(self):
         if self.life > 0:
             self.life -= 1
 
 class base_move(effect):
-    def __init__(self):
-        super().__init__(1)
+    def __init__(self, eid="base_move"):
+        super().__init__(eid, 1)
 
     def movable(self):
         for effect in self.owner.effects:
-            if isinstance(effect, unmovable):
+            if effect.eid == "unmovable":
                 return False
         return True
     
@@ -23,7 +24,7 @@ class base_move(effect):
 
 class simple_forward(base_move):
     def __init__(self, owner, speed):
-        super().__init__()
+        super().__init__("simple_forward")
         self.owner = owner
         self.speed = speed
     def update(self):
@@ -35,7 +36,7 @@ class simple_forward(base_move):
 
 class simple_turn(base_move):
     def __init__(self, owner, speed):
-        super().__init__()
+        super().__init__("simple_turn")
         self.owner = owner
         self.speed = speed
     def update(self):
@@ -47,7 +48,7 @@ class simple_turn(base_move):
 class simple_slide(base_move):
     '''positive speed for right'''
     def __init__(self, owner, speed):
-        super().__init__()
+        super().__init__("simple_slide")
         self.owner = owner
         self.speed = speed
     def update(self):
@@ -58,20 +59,11 @@ class simple_slide(base_move):
         self.owner.loc_y -= self.speed * math.cos(math.radians(self.owner.orient))
 
 class icon(effect):
-    def __init__(self, life):
-        super().__init__(life)
-        self.image = pg.Surface((16,16))
-        self.image.fill((0,0,0))
-        pg.draw.circle(self.image, (255,255,255), (8,8), 6)
-
-class unmovable(icon):
-    def __init__(self, life):
-        super().__init__(life)
-
-class unstable(icon):
-    def __init__(self, life):
-        super().__init__(life)
-
-class escaping(icon):
-    def __init__(self, life):
-        super().__init__(life)
+    def __init__(self, eid, life, picture):
+        super().__init__(eid, life)
+        if picture is None:
+            self.image = pg.Surface((32,32))
+            self.image.fill((0,0,0))
+            pg.draw.circle(self.image, (255,255,255), (16,16), 13)
+        else:
+            self.image = picture

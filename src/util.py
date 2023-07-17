@@ -40,7 +40,7 @@ def get_font(size):
     except:
         return pg.font.SysFont('Calibri', size)
 
-def load_image(filename, hight, width, colorkey=None):
+def load_image(filename, hight=None, width=None, colorkey=None):
     filename = os.path.join('res', filename)
     try:
         image = pg.image.load(filename)
@@ -53,10 +53,11 @@ def load_image(filename, hight, width, colorkey=None):
         if colorkey == -1:
             colorkey = image.get_at((0,0))
         image.set_colorkey(colorkey)
-    image = pg.transform.scale(image, (hight, width))
+    if hight is not None and width is not None:
+        image = pg.transform.scale(image, (hight, width))
     return image
 
-def load_image_alpha(filename, hight, width):
+def load_image_alpha(filename, hight=None, width=None):
     filename = os.path.join('res', filename)
     try:
         image = pg.image.load(filename)
@@ -65,7 +66,8 @@ def load_image_alpha(filename, hight, width):
         raise SystemExit(str(get_word('Could not load image')))
         return None
     image = image.convert_alpha()
-    image = pg.transform.scale(image, (hight, width))
+    if hight is not None and width is not None:
+        image = pg.transform.scale(image, (hight, width))
     return image
 
 def loading_page():
@@ -154,7 +156,7 @@ class Button_Box():
                         self.running = False
                         return self.curser
 
-class Menu_Page(Button_Box):
+class Menu_Page(Button_Box):#deprecated
     def __init__(self, button_names, picture, picture_rect):
         rect = pg.display.get_surface().get_rect()
         rect.width = rect.width // 2

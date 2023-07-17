@@ -11,7 +11,7 @@ class Core():
         self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:loss
         screen = pg.display.get_surface()
         self.screen = screen
-        self.ori_screen = pg.Surface((screen.get_width(), int(screen.get_height()*2)))
+        self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
         
         self.pressed = []
 
@@ -70,7 +70,7 @@ class Core():
     def keypress(self, key):
         if key == pg.K_ESCAPE:
             self.state = 3
-            menu = util.Button_Box(self.screen.get_rect(), ['continue', 'set keys', 'settings', 'main page', 'exit'])
+            menu = util.Button_Box(self.screen.get_rect(), ['continue', 'set keys', 'settings', 'main page', 'exit'], util.load_image('basic/loading_page.png', self.screen.get_width(), self.screen.get_height()))
             self.screen.fill((0,0,0))
             message = menu.start()
             while message == 1 or message == 2:
@@ -88,12 +88,20 @@ class Core():
                 pg.quit()
                 exit()
         if key == self.keys['skill1']:
-            skills.sample_cut(self.hero)
+            self.hero.skills[1].act_withkeys(self.hero, self.pressed, self.keys)
         if key == self.keys['skill2']:
-            skills.fire_boll(self.hero)
+            self.hero.skills[2].act_withkeys(self.hero, self.pressed, self.keys)
+        if key == self.keys['skill3']:
+            self.hero.skills[3].act_withkeys(self.hero, self.pressed, self.keys)
+        if key == self.keys['skill4']:
+            self.hero.skills[4].act_withkeys(self.hero, self.pressed, self.keys)
+        if key == self.keys['skill5']:
+            self.hero.skills[5].act_withkeys(self.hero, self.pressed, self.keys)
+        if key == self.keys['skill6']:
+            self.hero.skills[6].act_withkeys(self.hero, self.pressed, self.keys)
         #fast move
         if key == self.keys['fast mode']:
-            self.hero.skills[0].act(self.hero, self.pressed, self.keys)
+            self.hero.skills[0].act_withkeys(self.hero, self.pressed, self.keys)
         elif self.keys['fast mode'] in self.pressed:
             self.hero.skills[0].act_withkey(self.hero, key, self.keys)
 
@@ -116,7 +124,7 @@ class Core():
         count = 0
         for effect in self.hero.effects:
             if isinstance(effect, effects.icon):
-                self.screen.blit(effect.image, (rightlimit+width+count*32, margin))
+                self.screen.blit(effect.image, (rightlimit+width+count*(32+2), margin))
                 count += 1
 
     def solve_collision(self):

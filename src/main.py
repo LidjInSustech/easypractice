@@ -5,8 +5,17 @@ import util
 import keysetting
 import skills
 
+def load_game():
+    core0 = core.Core()
+    hero = entities.Prepared_entity(core0, [skills.fast_move(), skills.basic(), skills.basic(), skills.basic(), skills.basic(), skills.basic(), skills.basic()], picture=util.load_image_alpha('entities/human0.png', 64, 64))
+    hero.party = 1
+    enemy = entities.Entity(core0, 100, 100, 0, picture=util.load_image_alpha('entities/human1.png', 64, 64))
+    enemy.party = 2
+    core0.load(hero, [enemy])
+    core0.start()
+
 if __name__ == "__main__":
-    size = (1280, 640)
+    size = (960, 640)#3:2
     pg.init()
     util.init()
     #screen = pg.display.set_mode((512,512), pg.SCALED)
@@ -16,6 +25,7 @@ if __name__ == "__main__":
 
     #core = core.Core(screen)
     #core.load(entities.Entity(core, 0, 0, 0), [entities.Entity(core, 100, 100, 0)])
+    util.loading_page()
 
     main_picture = util.load_image('basic/main_page.png', size[0], size[1])
     main_picture.blit(util.get_font(28).render(util.get_word('Welcome to the game!'), True, (50,220,160)), (size[0]//2-20, 10))
@@ -24,13 +34,7 @@ if __name__ == "__main__":
     while cursor != -1 and cursor != 5:#exit
         if cursor == 0:#start
             util.loading_page()
-            core0 = core.Core()
-            hero = entities.Prepared_entity(core0, [skills.fast_move()], 0, 0, 0)
-            hero.party = 1
-            enemy = entities.Entity(core0, 100, 100, 0)
-            enemy.party = 2
-            core0.load(hero, [enemy])
-            core0.start()
+            load_game()
         if cursor == 1:#alter skills
             pass
         if cursor == 2:#alter weapons

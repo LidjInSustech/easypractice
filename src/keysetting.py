@@ -44,8 +44,8 @@ class KeySetting():
                 col_list.append(Button(text, pg.Rect(margin + (width + margin) * col, margin + (height + margin) * row, width, height)))
             self.buttons.append(col_list)
 
-        self.buttons[0].append(Button('Default', pg.Rect(margin + (width + margin) * 0, margin + (height + margin) * 7, width, height)))
-        self.buttons[1].append(Button('OK', pg.Rect(margin + (width + margin) * 1, margin + (height + margin) * 7, width, height)))
+        self.buttons[0].append(Button('default', pg.Rect(margin + (width + margin) * 0, margin + (height + margin) * 7, width, height)))
+        self.buttons[1].append(Button('confirm', pg.Rect(margin + (width + margin) * 1, margin + (height + margin) * 7, width, height)))
 
     def draw(self):
         if self.image is not None:

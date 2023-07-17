@@ -3,27 +3,80 @@ import math
 import entities
 import effects
 import sub_skill
+import util
 
 class basic():
-    def act(self, owner, keys, ref):
+    def act(self, owner, direction):
+        #direction in F(forth), B(back), L(left), R(right), C(center), LT(turn left), RT(turn ritht)
+        return
+
+    def act_withkeys(self, owner, keys, ref):
+        #print(keys)
         return
 
 class fast_move(basic):
     def __init__(self):
         picture = pg.Surface((16,16))
-        picture.set_colorkey((0,0,0))
-        pg.draw.line(picture, (255,255,255),(8,8),(0,8),3)
+        picture.fill((255,255,255))
+        picture.set_colorkey((255,255,255))
+        pg.draw.line(picture, (0,0,0),(8,8),(0,8),3)
         self.picture = picture
+        self.image_unstable = util.load_image('effects/unstable.png')
+        self.image_escaping = util.load_image('effects/escaping.png')
 
-    def act(self, owner, keys, ref):
-        if any([isinstance(effect, effects.unmovable) or isinstance(effect, effects.unstable) for effect in owner.effects]):
+    def act(self, owner, direction):
+        multiple = 20
+        if any([effect.eid in ("unstable", "unmovable") for effect in owner.effects]):
             return
-        if ref['up'] in keys:
-            sub_skill.fast_forward(owner, self.picture, owner.speed*4)
+        if direction == 'F':
+            sub_skill.fast_forward(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_escaping)
+        elif direction == 'B':
+            sub_skill.fast_forward(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_escaping)
+        elif direction == 'L':
+            sub_skill.fast_slide(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_escaping)
+        elif direction == 'R':
+            sub_skill.fast_slide(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_escaping)
+        elif direction == 'LT':
+            sub_skill.fast_turn(owner, 80)
+        elif direction == 'RT':
+            sub_skill.fast_turn(owner, -80)
+
+    def act_withkeys(self, owner, keys, ref):
+        i = len(keys) - 1
+        while i >= 0:
+            if keys[i] == ref['up']:
+                self.act(owner, 'F')
+                break
+            elif keys[i] == ref['down']:
+                self.act(owner, 'B')
+                break
+            elif keys[i] == ref['left']:
+                self.act(owner, 'L')
+                break
+            elif keys[i] == ref['right']:
+                self.act(owner, 'R')
+                break
+            elif keys[i] == ref['turn left']:
+                self.act(owner, 'LT')
+                break
+            elif keys[i] == ref['turn right']:
+                self.act(owner, 'RT')
+                break
+            i -= 1
 
     def act_withkey(self, owner, key, ref):
         if key == ref['up']:
-            sub_skill.fast_forward(owner, self.picture, owner.speed*4)
+            self.act(owner, 'F')
+        if key == ref['down']:
+            self.act(owner, 'B')
+        if key == ref['left']:
+            self.act(owner, 'L')
+        if key == ref['right']:
+            self.act(owner, 'R')
+        if key == ref['turn left']:
+            self.act(owner, 'LT')
+        if key == ref['turn right']:
+            self.act(owner, 'RT')
 
 
 class sample_cut(entities.Visible):
