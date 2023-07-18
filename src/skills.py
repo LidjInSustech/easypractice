@@ -21,20 +21,20 @@ class fast_move(basic):
         pg.draw.line(picture, (0,0,0),(8,8),(0,8),3)
         self.picture = picture
         self.image_unstable = util.load_image('effects/unstable.png')
-        self.image_escaping = util.load_image('effects/escaping.png')
+        self.image_invincible = util.load_image('effects/invincible.png')
 
     def act(self, owner, direction):
         multiple = 20
         if any([effect.eid in ("unstable", "unmovable") for effect in owner.effects]):
             return
         if direction == 'F':
-            sub_skill.fast_forward(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_escaping)
+            sub_skill.fast_forward(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'B':
-            sub_skill.fast_forward(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_escaping)
+            sub_skill.fast_forward(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'L':
-            sub_skill.fast_slide(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_escaping)
+            sub_skill.fast_slide(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'R':
-            sub_skill.fast_slide(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_escaping)
+            sub_skill.fast_slide(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'LT':
             sub_skill.fast_turn(owner, 80)
         elif direction == 'RT':
@@ -91,7 +91,7 @@ class slow_cut(basic):
     def __init__(self):
         size = 200
         self.i0 = pg.Surface((size, size), flags=pg.SRCALPHA)
-        pg.draw.arc(self.i0, (255,0,0,80), pg.Rect(0, 0, size, size), math.pi/6, math.pi/6*5, width=int(size/2))
+        pg.draw.arc(self.i0, (255,0,0,80), pg.Rect(0, 0, size, size), math.pi/6, math.pi/6*5, width=int(size/3))
         self.i1 = util.load_image_alpha('skills/cut_f1.png', size, size)
         self.i2 = util.load_image_alpha('skills/cut_f2.png', size, size)
         self.unmovable_image = util.load_image('effects/unmovable.png')

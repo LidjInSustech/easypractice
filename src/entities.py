@@ -89,6 +89,8 @@ class Entity(Visible):
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def demage(self, value):
+        if any(effect.eid == 'invincible' for effect in self.effects):
+            return
         self.health_point -= value
         self.core.spaces.add(demage_marker(self.core, self.loc_x, self.loc_y, self.orient, value))
 

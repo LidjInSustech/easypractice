@@ -3,7 +3,8 @@ import core
 import entities
 import util
 import keysetting
-import skills
+import skills_setting
+import levels
 
 def win_page():
     screen = pg.display.get_surface()
@@ -11,29 +12,25 @@ def win_page():
     picture.blit(util.get_font(28).render(util.get_word('You win!'), True, (150,220,160)), (20, 20))
     screen.blit(picture, (0,0))
     pg.display.update()
-    pg.time.delay(500)
+    pg.time.delay(1000)
     pg.event.wait()
 
 def lose_page():
     screen = pg.display.get_surface()
     picture = util.load_image('basic/lose_page.png', screen.get_width(), screen.get_height())
-    picture.blit(util.get_font(28).render(util.get_word('You lose!'), True, (150,220,160)), (20, 20))
+    picture.blit(util.get_font(28).render(util.get_word('You lose!'), True, (0,0,50)), (20, 20))
     screen.blit(picture, (0,0))
     pg.display.update()
-    pg.time.delay(500)
+    pg.time.delay(1000)
     pg.event.wait()
 
 def load_game():
     core0 = core.Core()
-    hero = entities.Prepared_entity(core0, [skills.fast_move(), skills.slow_cut(), skills.magic_sperm(), skills.basic(), skills.basic(), skills.basic(), skills.basic()], picture=util.load_image_alpha('entities/human0.png', 64, 64))
-    hero.party = 1
-    enemy = entities.Entity(core0, 100, 100, 0, picture=util.load_image_alpha('entities/human1.png', 64, 64))
-    enemy.party = 2
-    core0.load(hero, [enemy])
-    core0.start()
-
+    levels.load_game(core0)
     if core0.state == 4:
         win_page()
+    elif core0.state == 5:
+        lose_page()
 
 if __name__ == "__main__":
     size = (960, 640)#3:2
@@ -59,7 +56,8 @@ if __name__ == "__main__":
             util.loading_page()
             load_game()
         if cursor == 1:#alter skills
-            pass
+            util.loading_page()
+            skills_setting.skills_setting().start()
         if cursor == 2:#alter weapons
             pass
         if cursor == 3:#set keys

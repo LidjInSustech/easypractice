@@ -156,6 +156,38 @@ class Button_Box():
                         self.running = False
                         return self.curser
 
+class Rolling_Box(Button_Box):
+    def __init__(self, rect, button_rect, button_names, picture=None):
+        self.margin = 10
+        self.screen = pg.display.get_surface()
+        self.ori_screen = pg.Surface((button_rect.width, (button_rect.height+self.margin)*len(button_names)), flags=pg.SRCALPHA)
+        self.rect = rect
+        self.button_rect = button_rect
+        self.curser = 0
+        self.load_buttons(button_names)
+        self.picture = picture
+
+    def load_buttons(self, button_names):
+        margin = self.margin
+        width = self.button_rect.width
+        height = self.button_rect.height
+        self.buttons = []
+        for row in range(len(button_names)):
+            self.buttons.append(Button(button_names[row], pg.Rect(margin, margin + (height + margin) * row, width, height)))
+        for button in self.buttons:
+            self.ori_screen.blit(button.up_image, button.rect)
+
+    def draw(self):
+        self.screen.fill((0,0,0))
+        if self.picture is not None:
+            self.screen.blit(self.picture, self.picture.get_rect())
+        temp = self.ori_screen.copy()
+        temp.blit(self.buttons[self.curser].down_image, self.buttons[self.curser].rect)
+        gap = (self.ori_screen.get_height() - self.rect.height) / (len(self.buttons) - 1)
+        self.screen.blit(temp, self.rect, area=(0, gap*self.curser, self.rect.width, self.rect.height))
+        pg.display.update()
+
+
 class Menu_Page(Button_Box):#deprecated
     def __init__(self, button_names, picture, picture_rect):
         rect = pg.display.get_surface().get_rect()

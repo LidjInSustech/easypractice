@@ -11,7 +11,7 @@ def magis_requirement(owner, value):
         return False
 
 class fast_forward(entities.Visible):
-    def __init__(self, owner, picture, speed, image_escaping, image_unstable):
+    def __init__(self, owner, picture, speed, image_invincible, image_unstable):
         super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
         self.owner = owner
         self.speed = speed
@@ -26,7 +26,7 @@ class fast_forward(entities.Visible):
         self.core = owner.core
         self.core.spaces.add(self)
 
-        owner.effects.append(effects.icon("escaping", 4, image_escaping))
+        owner.effects.append(effects.icon("invincible", 4, image_invincible))
         owner.effects.append(effects.simple_forward(owner, speed))
         owner.effects.append(effects.icon("unstable", 12, image_unstable))
 
@@ -37,7 +37,7 @@ class fast_forward(entities.Visible):
             self.core.spaces.remove(self)
 
 class fast_slide(entities.Visible):
-    def __init__(self, owner, picture, speed, image_escaping, image_unstable):
+    def __init__(self, owner, picture, speed, image_invincible, image_unstable):
         super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
         self.owner = owner
         self.speed = speed
@@ -53,7 +53,7 @@ class fast_slide(entities.Visible):
         self.core = owner.core
         self.core.spaces.add(self)
 
-        owner.effects.append(effects.icon("escaping", 4, image_escaping))
+        owner.effects.append(effects.icon("invincible", 4, image_invincible))
         owner.effects.append(effects.simple_slide(owner, speed))
         owner.effects.append(effects.icon("unstable", 10, image_unstable))
 
@@ -117,8 +117,8 @@ class slow_cut(entities.Visible):
         self.owner = owner
         self.images = images
         self.image = self.images[0]
-        x, y, self.ab_orient = self.absolute_location()
-        self.image = pg.transform.rotate(self.image, self.ab_orient-90)
+        x, y, orient = self.absolute_location()
+        self.image = pg.transform.rotate(self.image, orient-90)
         self.rect = self.image.get_rect(center=(x, y))
         self.core = owner.core
         self.core.spaces.add(self)
@@ -130,17 +130,19 @@ class slow_cut(entities.Visible):
 
     def update(self):
         self.life -= 1
+        x, y, orient = self.absolute_location()
+        self.rect = self.image.get_rect(center=(x, y))
         if self.life < 0:
             self.core.spaces.remove(self)
-        elif self.life == 4:
+        elif self.life == 3:
             image = self.images[0].copy()
             image.blit(self.images[1], (0,0))
-            self.image = pg.transform.rotate(image, self.ab_orient-90)
+            self.image = pg.transform.rotate(image, orient-90)
             super().update()
         elif self.life == 2:
             image = self.images[0].copy()
             image.blit(self.images[2], (0,0))
-            self.image = pg.transform.rotate(image, self.ab_orient-90)
+            self.image = pg.transform.rotate(image, orient-90)
             super().update()
             for entity in self.core.entities:
                 if entity.party != self.party:

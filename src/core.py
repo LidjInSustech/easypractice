@@ -11,13 +11,13 @@ class Core():
         self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:lose
         screen = pg.display.get_surface()
         self.screen = screen
-        self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
+        #self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
+        self.ori_screen = screen.copy()
         
         self.pressed = []
 
         self.camera = Camera(self.ori_screen.get_rect().center)
-        self.background = Background(self.camera)
-    
+
         #self.hero = entities.Entity(self, self.camera)
         #self.enemy = entities.Entity(self, self.camera)
         self.entities = None
@@ -156,7 +156,8 @@ class Core():
                         entity1.loc_y += overlap/2 * math.sin(angle)
                         entity2.loc_y -= overlap/2 * math.sin(angle)
 
-    def load(self, hero, enemys):
+    def load(self, backgroundimage, hero, enemys):
+        self.background = Background(self.camera, backgroundimage)
         self.hero = hero
         self.entities = pg.sprite.Group(self.hero, *enemys)
         self.camera.ref = self.hero
@@ -196,15 +197,10 @@ class Core():
             self.state = 4
 
 class Background(entities.Visible):
-    def __init__(self, camera):
+    def __init__(self, camera, image = None):
         super().__init__(camera, 0, 0, 0)
-        #image = pg.image.load('./res/bigBackground.png')
-        #image = pg.transform.scale(image,(1024,1024)).convert_alpha()
-        image = util.load_image('floor/bigBackground.png', 1024, 1024, (0,0,0))
         if image is None:
             image = pg.Surface((1024,1024))
-        #image = pg.transform.scale(image,(1024,1024)).convert()
-        #image.set_colorkey((255,255,255))
         self.ori_image = image
         self.image = image
         self.rect = self.image.get_rect()
