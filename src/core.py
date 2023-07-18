@@ -8,7 +8,7 @@ import keysetting
 
 class Core():
     def __init__(self):
-        self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:loss
+        self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:lose
         screen = pg.display.get_surface()
         self.screen = screen
         self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
@@ -107,7 +107,6 @@ class Core():
 
     def drawUI(self):
         head = pg.transform.scale(self.hero.ori_image,(32,32))
-        head = pg.transform.rotate(head, 90)
         self.screen.blit(head, (4,4))
         width = 8
         leftlimit = 32+8

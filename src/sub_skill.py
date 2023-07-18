@@ -105,3 +105,48 @@ class magic_sperm(entities.Entity):
                         self.life = 0
         else:
             self.core.entities.remove(self)
+
+class slow_cut(entities.Visible):
+    def __init__(self, owner, orient, images, unmovable_image, size):
+        time = 16
+        if any([e.eid == 'slow_cut_cd' for e in owner.effects]):
+            return
+        owner.effects.append(effects.effect('slow_cut_cd', time+1))
+        owner.effects.append(effects.icon("unmovable", time, unmovable_image))
+        super().__init__(owner.camera, owner.loc_x, owner.loc_y, orient)
+        self.owner = owner
+        self.images = images
+        self.image = self.images[0]
+        x, y, self.ab_orient = self.absolute_location()
+        self.image = pg.transform.rotate(self.image, self.ab_orient-90)
+        self.rect = self.image.get_rect(center=(x, y))
+        self.core = owner.core
+        self.core.spaces.add(self)
+
+        self.life = time
+        self.party = owner.party
+        self.damage_range = size//2
+        self.damage = 20
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.core.spaces.remove(self)
+        elif self.life == 4:
+            image = self.images[0].copy()
+            image.blit(self.images[1], (0,0))
+            self.image = pg.transform.rotate(image, self.ab_orient-90)
+            super().update()
+        elif self.life == 2:
+            image = self.images[0].copy()
+            image.blit(self.images[2], (0,0))
+            self.image = pg.transform.rotate(image, self.ab_orient-90)
+            super().update()
+            for entity in self.core.entities:
+                if entity.party != self.party:
+                    ori1 = math.degrees(math.atan2(entity.loc_y-self.loc_y, entity.loc_x-self.loc_x))
+                    if (ori1 - self.orient)%360 < 60 or (ori1 - self.orient)%360 > 300:
+                        if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.damage_range+entity.size)**2:
+                            entity.demage(self.damage)
+        else:
+            super().update()

@@ -80,15 +80,25 @@ class fast_move(basic):
 class magic_sperm(basic):
     def __init__(self):
         size = 32
-        i0 = util.load_image_alpha('skills/mag_sperm.png', size, size)
-        self.i0 = pg.transform.rotate(i0, -90)
-        i1 = util.load_image_alpha('skills/mag_sperm1.png', size, size)
-        self.i1 = pg.transform.rotate(i1, -90)
-        i2 = util.load_image_alpha('skills/mag_sperm2.png', size, size)
-        self.i2 = pg.transform.rotate(i2, -90)
+        self.i0 = util.load_image_alpha('skills/mag_sperm.png', size, size)
+        self.i1 = util.load_image_alpha('skills/mag_sperm1.png', size, size)
+        self.i2 = util.load_image_alpha('skills/mag_sperm2.png', size, size)
 
     def act(self, owner, direction):
         sub_skill.magic_sperm(owner, owner.orient, [self.i0, self.i1, self.i2])
+
+class slow_cut(basic):
+    def __init__(self):
+        size = 200
+        self.i0 = pg.Surface((size, size), flags=pg.SRCALPHA)
+        pg.draw.arc(self.i0, (255,0,0,80), pg.Rect(0, 0, size, size), math.pi/6, math.pi/6*5, width=int(size/2))
+        self.i1 = util.load_image_alpha('skills/cut_f1.png', size, size)
+        self.i2 = util.load_image_alpha('skills/cut_f2.png', size, size)
+        self.unmovable_image = util.load_image('effects/unmovable.png')
+        self.size = size
+
+    def act(self, owner, direction):
+        sub_skill.slow_cut(owner, owner.orient, [self.i0, self.i1, self.i2], self.unmovable_image, self.size)
 
 class sample_cut_deprecated(entities.Visible):
     def __init__(self, owner):

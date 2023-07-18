@@ -36,7 +36,7 @@ class Entity(Visible):
             #picture = pg.Surface((64, 64))
             pg.draw.circle(picture, (12, 33, 120, 150), (32, 32), 32 - margin)
             pg.draw.polygon(picture, (250, 25, 55, 200), [(32, margin), (margin*2, 32), (64 - margin*2, 32)])
-        picture = pg.transform.rotate(picture, -90)
+        #picture = pg.transform.rotate(picture, -90)
         self.ori_image = picture
         self.image = self.ori_image
         self.rect = self.image.get_rect()
@@ -85,7 +85,7 @@ class Entity(Visible):
         pg.draw.arc(self.image, (255,0,0,200), arc_rect,
             math.pi/2, math.pi*(2*self.health_point/self.max_hp+0.5), width=margin)
 
-        self.image = pg.transform.rotate(self.image, orient)
+        self.image = pg.transform.rotate(self.image, orient-90)
         self.rect = self.image.get_rect(center=self.rect.center)
 
     def demage(self, value):
