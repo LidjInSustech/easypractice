@@ -48,8 +48,8 @@ class Core():
         #self.entities.draw(screen)
         self.ori_screen.fill((0,0,0))
         self.ori_screen.blit(self.background.image, self.background.rect)
-        self.spaces.draw(self.ori_screen)
         self.entities.draw(self.ori_screen)
+        self.spaces.draw(self.ori_screen)
         self.screen.blit(pg.transform.scale(self.ori_screen, self.screen.get_rect().size), (0,0))
         self.drawUI()
         
@@ -182,15 +182,17 @@ class Core():
             pg.display.flip()
 
     def check_finish(self):
-        p1 = False
+        if self.hero.health_point <= 0:
+            self.state = 5
+        #p1 = False
         p2 = False
         for entity in self.entities:
-            if entity.party == 1:
-                p1 = True
+            #if entity.party == 1:
+            #    p1 = True
             if entity.party == 2:
                 p2 = True
-        if p1 == False:
-            self.state = 5
+        #if p1 == False:
+        #    self.state = 5
         if p2 == False:
             self.state = 4
 

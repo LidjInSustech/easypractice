@@ -11,8 +11,7 @@ class basic():
         return
 
     def act_withkeys(self, owner, keys, ref):
-        #print(keys)
-        return
+        self.act(owner, 'C')
 
 class fast_move(basic):
     def __init__(self):
@@ -78,8 +77,20 @@ class fast_move(basic):
         if key == ref['turn right']:
             self.act(owner, 'RT')
 
+class magic_sperm(basic):
+    def __init__(self):
+        size = 32
+        i0 = util.load_image_alpha('skills/mag_sperm.png', size, size)
+        self.i0 = pg.transform.rotate(i0, -90)
+        i1 = util.load_image_alpha('skills/mag_sperm1.png', size, size)
+        self.i1 = pg.transform.rotate(i1, -90)
+        i2 = util.load_image_alpha('skills/mag_sperm2.png', size, size)
+        self.i2 = pg.transform.rotate(i2, -90)
 
-class sample_cut(entities.Visible):
+    def act(self, owner, direction):
+        sub_skill.magic_sperm(owner, owner.orient, [self.i0, self.i1, self.i2])
+
+class sample_cut_deprecated(entities.Visible):
     def __init__(self, owner):
         super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
         self.range = 100
@@ -109,7 +120,7 @@ class sample_cut(entities.Visible):
                         if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.range+entity.size)**2:
                             entity.health_point -= 20
 
-class fire_boll(entities.Entity):
+class fire_boll_deprecated(entities.Entity):
     def __init__(self, owner):
         image_size = 32
         picture = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)

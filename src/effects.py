@@ -8,6 +8,10 @@ class effect():
     def update(self):
         if self.life > 0:
             self.life -= 1
+    def __str__(self):
+        return f'{self.eid}: {self.life}'
+    def __repr__(self):
+        return self.__str__()
 
 class base_move(effect):
     def __init__(self, eid="base_move"):

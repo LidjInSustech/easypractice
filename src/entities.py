@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+import util
 
 margin = 4
 
@@ -78,15 +79,39 @@ class Entity(Visible):
 
         self.image = self.ori_image.copy()
         
-        pg.draw.arc(self.image, (155,155,155,200), pg.Rect(0,0,64,64),
+        arc_rect = self.image.get_rect()
+        pg.draw.arc(self.image, (155,155,155,200), arc_rect,
             math.pi*(2*self.health_point/self.max_hp+0.5), math.pi/2, width=margin)
-        pg.draw.arc(self.image, (255,0,0,200), pg.Rect(0,0,64,64),
+        pg.draw.arc(self.image, (255,0,0,200), arc_rect,
             math.pi/2, math.pi*(2*self.health_point/self.max_hp+0.5), width=margin)
 
         self.image = pg.transform.rotate(self.image, orient)
         self.rect = self.image.get_rect(center=self.rect.center)
 
+    def demage(self, value):
+        self.health_point -= value
+        self.core.spaces.add(demage_marker(self.core, self.loc_x, self.loc_y, self.orient, value))
+
+
 class Prepared_entity(Entity):
     def __init__(self, core, skills, x=0, y=0, orient=0, picture=None):
         super().__init__(core, x, y, orient, picture)
         self.skills = skills
+
+class demage_marker(Visible):
+    def __init__(self, core, x, y, orient, value):
+        super().__init__(core.camera, x, y, orient)
+        self.core = core
+        self.image = util.get_font(24).render(str(-value), True, (255, 0, 0), (0, 0, 0))
+        self.image.set_colorkey((0, 0, 0))
+        self.rect = self.image.get_rect()
+        x, y, orient = self.absolute_location()
+        self.rect.center = (x+20, y-20)
+        self.life = 5
+
+    def update(self):
+        super().update()
+        if self.life > 0:
+            self.life -= 1
+        else:
+            self.core.spaces.remove(self)
