@@ -126,76 +126,48 @@ class missile(basic):
     def act(self, owner, direction):
         sub_skill.missile(owner, owner.orient, [self.i0, self.i1, self.i2])
 
-class sample_cut_deprecated(entities.Visible):
-    def __init__(self, owner):
-        super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
-        self.range = 100
-        self.owner = owner
-        picture = pg.Surface((self.range*2, self.range*2), flags=pg.SRCALPHA)
-        pg.draw.arc(picture, (0,0,0,100), pg.Rect(0, 0, self.range*2, self.range*2), -math.pi/3, math.pi/3, width=int(self.range/2))
-        self.ori_image = picture
-        self.image = self.ori_image
-        x, y, orient = self.absolute_location()
-        self.image = pg.transform.rotate(self.image, orient)
-        self.rect = self.image.get_rect(center=(x, y))
-        self.life = 2
-        self.core = owner.core
-        self.core.spaces.add(self)
+class fireball(basic):
+    def __init__(self):
+        super().__init__()
+        size1 = 64
+        size2 = 192
+        self.i0 = util.load_image_alpha('skills/fireball1.png', size1, size1)
+        self.i1 = util.load_image_alpha('skills/fireball2.png', size1, size1)
+        self.i2 = util.load_image_alpha('skills/fireball3.png', size1, size1)
+        self.i = util.load_image_alpha('skills/fireball_final.png', size2, size2)
+        self.size1 = 24
+        self.size2 = 80
 
-    def update(self):
-        super().update()
+    def act(self, owner, direction):
+        sub_skill.fireball(owner, owner.orient, [self.i0, self.i1, self.i2], self.i, self.size1, self.size2)
 
-        if self.life > 0:
-            self.life -= 1
+class helix_cut(basic):
+    def __init__(self):
+        super().__init__()
+        size = 200
+        image = pg.Surface((size, size), flags=pg.SRCALPHA)
+        pg.draw.arc(image, (255,0,0,80), pg.Rect(0, 0, size, size), math.pi/6, math.pi/6*5, width=int(size/3))
+        image.blit(util.load_image_alpha('skills/cut_f2.png', size, size), (0,0))
+        self.image = image
+        self.image_unstable = util.load_image('effects/unstable.png')
+        self.working = None
+        self.size = size//2
+
+    def act(self, owner, direction):
+        if self.working == None:
+            self.working = sub_skill.helix_cut(owner, self.image, self.size, self.image_unstable)
         else:
-            self.core.spaces.remove(self)
-            for entity in self.core.entities:
-                if entity != self.owner:
-                    ori1 = math.degrees(math.atan2(entity.loc_y-self.loc_y, entity.loc_x-self.loc_x))
-                    if (ori1 - self.orient)%360 < 60 or (ori1 - self.orient)%360 > 300:
-                        if (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.range+entity.size)**2:
-                            entity.health_point -= 20
+            self.working.remove()
+            self.working = None
 
-class fire_boll_deprecated(entities.Entity):
-    def __init__(self, owner):
-        image_size = 32
-        picture = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
-        pg.draw.circle(picture, (255, 0, 0, 200), (image_size, image_size), image_size)
-        pg.draw.circle(picture, (255, 255, 0, 200), (image_size, image_size), image_size//2)
-        x_forward = math.cos(math.radians(owner.orient))*image_size*2 + owner.loc_x
-        y_forward = math.sin(math.radians(owner.orient))*image_size*2 + owner.loc_y
-        super().__init__(owner.core, x_forward, y_forward, owner.orient, picture)
-        self.end_image = pg.Surface((2*image_size, 2*image_size), flags=pg.SRCALPHA)
-        pg.draw.circle(self.end_image, (0,0,0,100), (image_size, image_size), image_size)
-        self.core = owner.core
-        self.owner = owner
-        self.speed = 10
-        self.range = image_size
-        self.life = 60
-        self.size = image_size
-        self.health_point = 10
-        self.max_hp = 10
+class healing(basic):
+    def __init__(self):
+        super().__init__()
+        self.image = util.load_image_alpha('effects/healing.png', 32, 32)
 
-        consume = 10
-        if owner.magis_point > consume:
-            owner.magis_point -= consume
-            self.core.entities.add(self)
-            
-            owner.effects.append(effects.unmovable(10))
+    def act(self, owner, direction):
+        sub_skill.healing(owner, self.image, 1, 100, 200)
 
-    def update(self):
-        self.effects.append(effects.simple_forward(self, self.speed))
-        super().update()
-        if self.life <= 0:
-            self.core.entities.remove(self)
-        else:
-            self.life -= 1
-            for entity in self.core.entities:
-                if entity == self.owner:
-                    continue
-                elif entity == self:
-                    continue
-                elif (entity.loc_x-self.loc_x)**2+(entity.loc_y-self.loc_y)**2 < (self.range+entity.size)**2:
-                    entity.health_point -= 40
-                    self.image = self.end_image
-                    self.life = 0
+class heal(basic):
+    def act(self, owner, direction):
+        sub_skill.heal(owner, 100, 400)

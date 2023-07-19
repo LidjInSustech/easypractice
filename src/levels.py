@@ -6,10 +6,11 @@ import random
 import effects
 
 def load_game(CORE):
-    hero_skills = [skills.fast_move(), skills.fast_cut(), skills.slow_cut(), skills.magic_sperm(), skills.missile(), skills.basic(), skills.basic()]
-    hero = entities.Prepared_entity(CORE, hero_skills, picture=util.load_image_alpha('entities/human0.png', 64, 64))
+    hero_skills = [skills.fast_move(), skills.fast_cut(), skills.heal(), skills.magic_sperm(), skills.missile(), skills.fireball(), skills.helix_cut()]
+    hero = entities.Prepared_entity(CORE, hero_skills, picture=util.load_image_alpha('entities/human0.png', 64, 64), x = -200, y = 0)
     hero.party = 1
     enemy = auto_missile(CORE)
+    #enemy = entities.Prepared_entity(CORE, [], picture=util.load_image_alpha('entities/human1.png', 64, 64), x = 400, y = 0, orient = 180)
     enemy.party = 2
     backgroundimage = util.load_image('floor/colorful.png', 1024, 1024, (0,0,0))
     CORE.load(backgroundimage, hero, [enemy])
@@ -18,7 +19,7 @@ def load_game(CORE):
 class auto_cut(entities.Prepared_entity):
     def __init__(self, core):
         picture = util.load_image_alpha('entities/human1.png', 64, 64)
-        super().__init__(core, [skills.slow_cut()], x = 500, y = 0, picture = picture)
+        super().__init__(core, [skills.slow_cut()], x = 400, y = 0, orient = 180, picture = picture)
         self.thought = 'seek'
 
     def update(self):
