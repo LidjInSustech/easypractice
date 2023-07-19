@@ -6,15 +6,30 @@ import sub_skill
 import util
 
 class basic():
+    def __init__(self, directions = None, finaldir = 'C'):
+        self.directions = directions
+        self.finaldir = finaldir
+        self.reflist = {'F':'up', 'B':'down', 'L':'left', 'R':'right', 'LT':'turn left', 'RT':'turn right'}
+
     def act(self, owner, direction):
         #direction in F(forth), B(back), L(left), R(right), C(center), LT(turn left), RT(turn ritht)
         return
 
     def act_withkeys(self, owner, keys, ref):
-        self.act(owner, 'C')
+        if self.directions == None:
+            return self.act(owner, self.finaldir)
+        i = len(keys) - 1
+        while i >= 0:
+            key = keys[i]
+            for direction in self.directions:
+                if key == ref[self.reflist[direction]]:
+                    return self.act(owner, direction)
+            i -= 1
+        return self.act(owner, self.finaldir)
 
 class fast_move(basic):
     def __init__(self):
+        super().__init__(['F', 'B', 'L', 'R', 'LT', 'RT'], 'C')
         picture = pg.Surface((16,16))
         picture.fill((255,255,255))
         picture.set_colorkey((255,255,255))
@@ -38,45 +53,25 @@ class fast_move(basic):
         elif direction == 'RT':
             sub_skill.fast_turn(owner, -80)
 
-    def act_withkeys(self, owner, keys, ref):
-        i = len(keys) - 1
-        while i >= 0:
-            if keys[i] == ref['up']:
-                self.act(owner, 'F')
-                break
-            elif keys[i] == ref['down']:
-                self.act(owner, 'B')
-                break
-            elif keys[i] == ref['left']:
-                self.act(owner, 'L')
-                break
-            elif keys[i] == ref['right']:
-                self.act(owner, 'R')
-                break
-            elif keys[i] == ref['turn left']:
-                self.act(owner, 'LT')
-                break
-            elif keys[i] == ref['turn right']:
-                self.act(owner, 'RT')
-                break
-            i -= 1
-
     def act_withkey(self, owner, key, ref):
         if key == ref['up']:
             self.act(owner, 'F')
-        if key == ref['down']:
+        elif key == ref['down']:
             self.act(owner, 'B')
-        if key == ref['left']:
+        elif key == ref['left']:
             self.act(owner, 'L')
-        if key == ref['right']:
+        elif key == ref['right']:
             self.act(owner, 'R')
-        if key == ref['turn left']:
+        elif key == ref['turn left']:
             self.act(owner, 'LT')
-        if key == ref['turn right']:
+        elif key == ref['turn right']:
             self.act(owner, 'RT')
+        else:
+            return
 
 class magic_sperm(basic):
     def __init__(self):
+        super().__init__()
         size = 32
         self.i0 = util.load_image_alpha('skills/mag_sperm.png', size, size)
         self.i1 = util.load_image_alpha('skills/mag_sperm1.png', size, size)
@@ -87,16 +82,49 @@ class magic_sperm(basic):
 
 class slow_cut(basic):
     def __init__(self):
+        super().__init__(['F', 'L', 'R', 'LT', 'RT'], 'C')
         size = 200
         self.i0 = pg.Surface((size, size), flags=pg.SRCALPHA)
         pg.draw.arc(self.i0, (255,0,0,80), pg.Rect(0, 0, size, size), math.pi/6, math.pi/6*5, width=int(size/3))
         self.i1 = util.load_image_alpha('skills/cut_f1.png', size, size)
         self.i2 = util.load_image_alpha('skills/cut_f2.png', size, size)
+        self.it = pg.Surface((size, size), flags=pg.SRCALPHA)
+        pg.draw.arc(self.it, (255,0,0,80), pg.Rect(0, 0, size, size), 0, math.pi, width=int(size/3))
+        self.ir1 = util.load_image_alpha('skills/cut_t1.png', size, size)
+        self.ir2 = util.load_image_alpha('skills/cut_t2.png', size, size)
+        self.il1 = pg.transform.flip(self.ir1, True, False)
+        self.il2 = pg.transform.flip(self.ir2, True, False)
         self.unmovable_image = util.load_image('effects/unmovable.png')
         self.size = size
+        self.slow = True
 
     def act(self, owner, direction):
-        sub_skill.slow_cut(owner, owner.orient, [self.i0, self.i1, self.i2], self.unmovable_image, self.size)
+        if direction == 'L':
+            sub_skill.slow_cut(owner, owner.orient+90, [self.i0, self.i1, self.i2], self.unmovable_image, self.size, slow = self.slow)
+        elif direction == 'R':
+            sub_skill.slow_cut(owner, owner.orient-90, [self.i0, self.i1, self.i2], self.unmovable_image, self.size, slow = self.slow)
+        elif direction == 'LT':
+            sub_skill.slow_cut(owner, owner.orient+90, [self.it, self.il1, self.il2], self.unmovable_image, self.size, slow = self.slow, side = True)
+        elif direction == 'RT':
+            sub_skill.slow_cut(owner, owner.orient-90, [self.it, self.ir1, self.ir2], self.unmovable_image, self.size, slow = self.slow, side = True)
+        else:
+            sub_skill.slow_cut(owner, owner.orient, [self.i0, self.i1, self.i2], self.unmovable_image, self.size, slow = self.slow)
+
+class fast_cut(slow_cut):
+    def __init__(self):
+        super().__init__()
+        self.slow = False
+
+class missile(basic):
+    def __init__(self):
+        super().__init__()
+        size = 48
+        self.i0 = util.load_image_alpha('skills/missile1.png', size, size)
+        self.i1 = util.load_image_alpha('skills/missile2.png', size, size)
+        self.i2 = util.load_image_alpha('skills/missile3.png', size, size)
+
+    def act(self, owner, direction):
+        sub_skill.missile(owner, owner.orient, [self.i0, self.i1, self.i2])
 
 class sample_cut_deprecated(entities.Visible):
     def __init__(self, owner):
