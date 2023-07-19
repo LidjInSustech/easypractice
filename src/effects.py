@@ -16,25 +16,39 @@ class effect():
 class base_move(effect):
     def __init__(self, eid="base_move"):
         super().__init__(eid, 1)
-
-    def movable(self):
-        for effect in self.owner.effects:
-            if effect.eid == "unmovable":
-                return False
-        return True
     
     def update(self):
+        self.life = 0
+        for effect in self.owner.effects:
+            if effect.eid == "unmovable":
+                return
+        colisions = []
+        o = self.owner
+        ori_x = o.loc_x
+        ori_y = o.loc_y
+        for e in o.core.entities:
+            if e.party != o.party:
+                if (e.loc_x - o.loc_x)**2 + (e.loc_y - o.loc_y)**2 < (e.size + o.size)**2:
+                    colisions.append(e)
+        self.act()
+        for e in o.core.entities:
+            if e.party != o.party:
+                if (e.loc_x - o.loc_x)**2 + (e.loc_y - o.loc_y)**2 < (e.size + o.size)**2:
+                    if e not in colisions:
+                        o.loc_x = ori_x
+                        o.loc_y = ori_y
+                        return
+    
+    def act(self):
         pass
+        
 
 class simple_forward(base_move):
     def __init__(self, owner, speed):
         super().__init__("simple_forward")
         self.owner = owner
         self.speed = speed
-    def update(self):
-        self.life = 0
-        if not self.movable():
-            return
+    def act(self):
         self.owner.loc_x += self.speed * math.cos(math.radians(self.owner.orient))
         self.owner.loc_y += self.speed * math.sin(math.radians(self.owner.orient))
 
@@ -45,8 +59,9 @@ class simple_turn(base_move):
         self.speed = speed
     def update(self):
         self.life = 0
-        if not self.movable():
-            return
+        for effect in self.owner.effects:
+            if effect.eid == "unmovable":
+                return
         self.owner.orient += self.speed
 
 class simple_slide(base_move):
@@ -55,10 +70,7 @@ class simple_slide(base_move):
         super().__init__("simple_slide")
         self.owner = owner
         self.speed = speed
-    def update(self):
-        self.life = 0
-        if not self.movable():
-            return
+    def act(self):
         self.owner.loc_x += self.speed * math.sin(math.radians(self.owner.orient))
         self.owner.loc_y -= self.speed * math.cos(math.radians(self.owner.orient))
 

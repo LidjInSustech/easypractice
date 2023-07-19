@@ -11,51 +11,24 @@ def magis_requirement(owner, value):
         return False
 
 class fast_forward(entities.Visible):
-    def __init__(self, owner, picture, speed, image_invincible, image_unstable):
-        super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
+    def __init__(self, owner, orient, picture, speed, image_invincible, image_unstable):
+        for effect in owner.effects:
+            if effect.eid in ("unmovable", "unstable"):
+                return
+        super().__init__(owner.camera, owner.loc_x, owner.loc_y, orient)
         self.owner = owner
-        self.speed = speed
         x, y, orient = self.absolute_location()
-        self.image = pg.transform.scale(picture, (abs(speed)*2, abs(speed)*2))
-        if speed < 0:
-            self.image = pg.transform.rotate(self.image, orient+180)
-        else:
-            self.image = pg.transform.rotate(self.image, orient)
+        self.image = pg.transform.scale(picture, (speed*2, speed*2))
+        self.image = pg.transform.rotate(self.image, orient)
         self.rect = self.image.get_rect(center=(x, y))
         self.life = 2
         self.core = owner.core
         self.core.spaces.add(self)
 
         owner.effects.append(effects.icon("invincible", 4, image_invincible))
-        owner.effects.append(effects.simple_forward(owner, speed))
         owner.effects.append(effects.icon("unstable", 12, image_unstable))
-
-    def update(self):
-        if self.life > 0:
-            self.life -= 1
-        else:
-            self.core.spaces.remove(self)
-
-class fast_slide(entities.Visible):
-    def __init__(self, owner, picture, speed, image_invincible, image_unstable):
-        super().__init__(owner.camera, owner.loc_x, owner.loc_y, owner.orient)
-        self.owner = owner
-        self.speed = speed
-        x, y, orient = self.absolute_location()
-        self.image = pg.transform.scale(picture, (abs(speed)*2, abs(speed)*2))
-        if speed < 0:
-            self.image = pg.transform.rotate(self.image, orient+90)
-        else:
-            self.image = pg.transform.rotate(self.image, orient-90)
-        #self.image = pg.transform.rotate(self.image, orient)
-        self.rect = self.image.get_rect(center=(x, y))
-        self.life = 2
-        self.core = owner.core
-        self.core.spaces.add(self)
-
-        owner.effects.append(effects.icon("invincible", 4, image_invincible))
-        owner.effects.append(effects.simple_slide(owner, speed))
-        owner.effects.append(effects.icon("unstable", 10, image_unstable))
+        owner.loc_x += speed * math.cos(math.radians(self.orient))
+        owner.loc_y += speed * math.sin(math.radians(self.orient))
 
     def update(self):
         if self.life > 0:
@@ -65,18 +38,22 @@ class fast_slide(entities.Visible):
 
 class fast_turn():
     def __init__(self, owner, angle):
-        owner.effects.append(effects.simple_turn(owner, angle))
+        for effect in owner.effects:
+            if effect.eid == "unmovable":
+                return
+        owner.orient += angle
 
 class magic_sperm(entities.Entity):
     def __init__(self, owner, orient, images):
-        if not magis_requirement(owner, 10):
+        if not magis_requirement(owner, 100):
             return
         if any([e.eid == 'magic_sperm_cd' for e in owner.effects]):
             return
         owner.effects.append(effects.effect('magic_sperm_cd', 10))
-        x = math.cos(math.radians(orient))*owner.size*1.2 + owner.loc_x
-        y = math.sin(math.radians(orient))*owner.size*1.2 + owner.loc_y
-        super().__init__(owner.core, x, y, orient, images[0])
+        #x = math.cos(math.radians(orient))*owner.size*1.2 + owner.loc_x
+        #y = math.sin(math.radians(orient))*owner.size*1.2 + owner.loc_y
+        #super().__init__(owner.core, x, y, orient, images[0])
+        super().__init__(owner.core, owner.loc_x, owner.loc_y, orient, images[0])
         self.owner = owner
         self.images = images
         self.image = self.images[0]
@@ -84,12 +61,12 @@ class magic_sperm(entities.Entity):
         self.core = owner.core
         self.core.entities.add(self)
 
-        self.health_point = 10
-        self.max_hp = 10
+        self.health_point = 100
+        self.max_hp = 100
         self.party = owner.party
         self.size = 8
         self.damage_range = 12
-        self.damage = 10
+        self.damage = 80
 
     def update(self):
         if self.life > 0:
@@ -126,7 +103,7 @@ class slow_cut(entities.Visible):
         self.life = time
         self.party = owner.party
         self.damage_range = size//2
-        self.damage = 20
+        self.damage = 200
 
     def update(self):
         self.life -= 1

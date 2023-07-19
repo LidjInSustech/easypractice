@@ -11,8 +11,8 @@ class Core():
         self.state = 0 # 0:unprepared, 1:prepared, 2:running, 3:paused, 4:win, 5:lose
         screen = pg.display.get_surface()
         self.screen = screen
-        #self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
-        self.ori_screen = screen.copy()
+        self.ori_screen = pg.Surface((screen.get_width(), screen.get_width()))
+        #self.ori_screen = screen.copy()
         
         self.pressed = []
 
@@ -140,21 +140,21 @@ class Core():
             elif y > y_limit:
                 entity.loc_y = y_limit
 
-        for i in range(len(self.entities)):
-            for j in range(i+1, len(self.entities)):
-                entity1 = self.entities.sprites()[i]
-                entity2 = self.entities.sprites()[j]
-                overlap = entity1.size + entity2.size - math.sqrt((entity1.loc_x - entity2.loc_x)**2 + (entity1.loc_y - entity2.loc_y)**2)
-                if overlap > 0:
-                    if entity1.loc_x == entity2.loc_x:
-                        entity1.loc_x += overlap/2
-                        entity2.loc_x -= overlap/2
-                    else:
-                        angle = math.atan((entity1.loc_y - entity2.loc_y)/(entity1.loc_x - entity2.loc_x))
-                        entity1.loc_x += overlap/2 * math.cos(angle)
-                        entity2.loc_x -= overlap/2 * math.cos(angle)
-                        entity1.loc_y += overlap/2 * math.sin(angle)
-                        entity2.loc_y -= overlap/2 * math.sin(angle)
+        #for i in range(len(self.entities)):
+        #    for j in range(i+1, len(self.entities)):
+        #        entity1 = self.entities.sprites()[i]
+        #        entity2 = self.entities.sprites()[j]
+        #        overlap = entity1.size + entity2.size - math.sqrt((entity1.loc_x - entity2.loc_x)**2 + (entity1.loc_y - entity2.loc_y)**2)
+        #        if overlap > 0:
+        #            if entity1.loc_x == entity2.loc_x:
+        #                entity1.loc_x += overlap/2
+        #                entity2.loc_x -= overlap/2
+        #            else:
+        #                angle = math.atan((entity1.loc_y - entity2.loc_y)/(entity1.loc_x - entity2.loc_x))
+        #                entity1.loc_x += overlap/2 * math.cos(angle)
+        #                entity2.loc_x -= overlap/2 * math.cos(angle)
+        #                entity1.loc_y += overlap/2 * math.sin(angle)
+        #                entity2.loc_y -= overlap/2 * math.sin(angle)
 
     def load(self, backgroundimage, hero, enemys):
         self.background = Background(self.camera, backgroundimage)

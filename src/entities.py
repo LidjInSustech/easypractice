@@ -46,11 +46,11 @@ class Entity(Visible):
 
         self.size = 24
 
-        self.health_point = 100
-        self.max_hp = 100
-        self.magis_point = 100
-        self.max_mp = 100
-        self.mp_recovery = 1
+        self.max_hp = 1000
+        self.health_point = self.max_hp
+        self.max_mp = 1000
+        self.magis_point = self.max_mp
+        self.mp_recovery = 3
         self.speed = 5
         self.party = 0
         self.effects = []

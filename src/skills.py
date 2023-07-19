@@ -25,16 +25,14 @@ class fast_move(basic):
 
     def act(self, owner, direction):
         multiple = 20
-        if any([effect.eid in ("unstable", "unmovable") for effect in owner.effects]):
-            return
         if direction == 'F':
-            sub_skill.fast_forward(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
+            sub_skill.fast_forward(owner, owner.orient, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'B':
-            sub_skill.fast_forward(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_invincible)
+            sub_skill.fast_forward(owner, owner.orient+180, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'L':
-            sub_skill.fast_slide(owner, self.picture, -owner.speed*multiple, self.image_unstable, self.image_invincible)
+            sub_skill.fast_forward(owner, owner.orient+90, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'R':
-            sub_skill.fast_slide(owner, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
+            sub_skill.fast_forward(owner, owner.orient-90, self.picture, owner.speed*multiple, self.image_unstable, self.image_invincible)
         elif direction == 'LT':
             sub_skill.fast_turn(owner, 80)
         elif direction == 'RT':

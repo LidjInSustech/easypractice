@@ -12,6 +12,7 @@ def win_page():
     picture.blit(util.get_font(28).render(util.get_word('You win!'), True, (150,220,160)), (20, 20))
     screen.blit(picture, (0,0))
     pg.display.update()
+    pg.event.clear()
     pg.time.delay(1000)
     pg.event.wait()
 
@@ -21,6 +22,7 @@ def lose_page():
     picture.blit(util.get_font(28).render(util.get_word('You lose!'), True, (0,0,50)), (20, 20))
     screen.blit(picture, (0,0))
     pg.display.update()
+    pg.event.clear()
     pg.time.delay(1000)
     pg.event.wait()
 
