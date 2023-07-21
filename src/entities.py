@@ -2,118 +2,109 @@ import pygame as pg
 import math
 import util
 
-margin = 4
-
 class Visible(pg.sprite.Sprite):
-    def __init__(self, camera, x, y, orient):
+    def __init__(self, camera, loc = pg.math.Vector2(), orientation = 0, image = None, rotate_image = True):
         super().__init__()
         self.camera = camera
-        self.loc_x = x
-        self.loc_y = y
-        self.orient = orient
-        #self.center = pg.display.get_surface().get_rect().center
-        self.center = self.camera.center
+        self.loc = loc
+        self.orientation = orientation
+        self.origional_image = image
+        self.rotate_image = rotate_image
+        self.update()
 
-    def absolute_location(self):
+    def calculate_position(self):
         if self.camera is None:
             raise Exception('Camera is not set')
-        camera = self.camera
-        rad = math.radians(camera.orient)
-        cos = math.cos(rad)
-        sin = math.sin(rad)
-        dx = self.loc_x - camera.loc_x
-        dy = self.loc_y - camera.loc_y
-        ref_x = cos*dx + sin*dy
-        ref_y = sin*dx - cos*dy
-        return self.center[0]+ref_x, self.center[1]+ref_y, self.orient - self.camera.orient
+        self.draw_pos = self.loc - self.camera.loc
+        self.draw_pos.rotate_ip(-self.camera.orient)
+        self.draw_pos += self.camera.center
+        self.draw_orient = self.orientation - self.camera.orient
 
-class Entity(Visible):
-    def __init__(self, core, x=0, y=0, orient=0, picture=None):
-        super().__init__(core.camera, x, y, orient)
-        if picture is None:
-            #picture = pg.transform.scale(pg.image.load('./res/entity.png'),(48,48)).convert_alpha()
-            picture = pg.Surface((64, 64), flags=pg.SRCALPHA)
-            #picture = pg.Surface((64, 64))
-            pg.draw.circle(picture, (12, 33, 120, 150), (32, 32), 32 - margin)
-            pg.draw.polygon(picture, (250, 25, 55, 200), [(32, margin), (margin*2, 32), (64 - margin*2, 32)])
-        #picture = pg.transform.rotate(picture, -90)
-        self.ori_image = picture
-        self.image = self.ori_image
-        self.rect = self.image.get_rect()
+    def handle_image(self, source_image):
+        self.calculate_position()
+        if self.rotate_image:
+            self.image = pg.transform.rotate(source_image, self.draw_orient)
+        else:
+            self.image = source_image
+        self.rect = self.image.get_rect(center=self.draw_pos)
 
-        self.rect.center = self.center
-        self.core = core
+    def update(self):
+        self.handle_image(origional_image)
 
-        self.size = 24
+class Accessory(Visible):
+    def __init__(self, camera, owner, image = None, rotate_image = True):
+        super().__init__(camera, owner.loc, owner.orientation, image, rotate_image)
 
-        self.max_hp = 1000
-        self.health_point = self.max_hp
-        self.max_mp = 1000
-        self.magis_point = self.max_mp
-        self.mp_recovery = 3
-        self.speed = 5
-        self.party = 0
+    def update(self):
+        self.loc = self.owner.loc
+        self.orientation = self.owner.orientation
+        super().update()
+
+class Field(Visible):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, mask_surface = None, rotate_image = True):
+        self.original_mask = mask_surface
+        self.controller = controller
+        self.faction = faction
+        super().__init__(controller.camera, loc, orientation, image, rotate_image)
+
+    def update_mask(self):
+        if self.original_mask is None:
+            self.mask = pg.mask.from_surface(self.image)
+        else:
+            if self.rotate_image:
+                self.mask = pg.mask.from_surface(pg.transform.rotate(self.original_mask, self.draw_orient))
+            else:
+                self.mask = pg.mask.from_surface(self.original_mask)
+
+    def handle_image(self, source_image):
+        self.calculate_position()
+        if self.rotate_image:
+            self.image = pg.transform.rotate(source_image, self.draw_orient)
+        else:
+            self.image = source_image
+        self.rect = self.image.get_rect(center=self.draw_pos)
+        self.update_mask()
+        
+class Entity(Field):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, mask_surface = None, rotate_image = True, properties = None):
+        super().__init__(controller, loc, orientation, faction, image, mask_surface, rotate_image)
+        if 'max_hp' not in properties:
+            properties['max_hp'] = 1000
+        if 'hp' not in properties:
+            properties['hp'] = properties['max_hp']
+        if 'max_mp' not in properties:
+            properties['max_mp'] = 1000
+        if 'mp' not in properties:
+            properties['mp'] = properties['max_mp']
+        if 'mp_regen' not in properties:
+            properties['mp_regen'] = 0
+        self.properties = properties
         self.effects = []
 
     def update(self):
-        super().update()
-
-        self.magis_point += self.mp_recovery
-        if self.health_point > self.max_hp:
-            self.health_point = self.max_hp
-        if self.magis_point > self.max_mp:
-            self.magis_point = self.max_mp
-        if self.health_point <= 0:
-            self.core.entities.remove(self)
-        
-        i = 0
-        while i < len(self.effects):
-            self.effects[i].update()
-            if self.effects[i].life == 0:
-                del self.effects[i]
-            else:
-                i += 1
-
-        x, y, orient = self.absolute_location()
-        self.rect.center = (x, y)
-
-        self.image = self.ori_image.copy()
-        
-        arc_rect = self.image.get_rect()
-        pg.draw.arc(self.image, (155,155,155,200), arc_rect,
-            math.pi*(2*self.health_point/self.max_hp+0.5), math.pi/2, width=margin)
-        pg.draw.arc(self.image, (255,0,0,200), arc_rect,
-            math.pi/2, math.pi*(2*self.health_point/self.max_hp+0.5), width=margin)
-
-        self.image = pg.transform.rotate(self.image, orient-90)
-        self.rect = self.image.get_rect(center=self.rect.center)
-
-    def demage(self, value):
-        if any(effect.eid == 'invincible' for effect in self.effects):
-            return
-        self.health_point -= value
-        self.core.spaces.add(demage_marker(self.core, self.loc_x, self.loc_y, self.orient, value))
-
-
-class Prepared_entity(Entity):
-    def __init__(self, core, skills, x=0, y=0, orient=0, picture=None):
-        super().__init__(core, x, y, orient, picture)
-        self.skills = skills
-
-class demage_marker(Visible):
-    def __init__(self, core, x, y, orient, value):
-        super().__init__(core.camera, x, y, orient)
-        self.core = core
-        self.image = util.get_font(24).render(str(-value), True, (255, 0, 0), (0, 0, 0))
-        self.image.set_colorkey((0, 0, 0))
-        self.rect = self.image.get_rect()
-        x, y, orient = self.absolute_location()
-        self.rect.center = (x+20, y-20)
-        self.life = 5
-
-    def update(self):
-        super().update()
-        if self.life > 0:
-            self.life -= 1
+        self.effect = filter(lambda x: x.update(), self.effects)
+        self.properties['mp'] += self.properties['mp_regen']
+        self.properties['mp'] = min(self.properties['mp'], self.properties['max_mp'])
+        self.properties['hp'] = min(self.properties['hp'], self.properties['max_hp'])
+        if self.properties['hp'] <= 0:
+            self.kill()
         else:
-            self.core.spaces.remove(self)
+            super().update()
+
+class Movable(Entity):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, mask_surface = None, rotate_image = True, properties = None):
+        super().__init__(controller, loc, orientation, faction, image, mask_surface, rotate_image, properties)
+        if 'speed' not in self.properties:
+            self.properties['speed'] = 5
+
+    def move(relative_direction, distance):
+        colisions = []
+        for entity in self.controller.entities:
+            if entity.faction != self.faction and pg.sprite.collide_mask(self, entity):
+                colisions.append(entity)
+        move_vector = pg.math.Vector2.from_polar((distance, self.orientation + relative_direction))
+        self.loc += move_vector
+        for entity in self.controller.entities:
+            if entity.faction != self.faction and pg.sprite.collide_mask(self, entity) and entity not in colisions:
+                self.loc -= move_vector
+                break

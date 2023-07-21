@@ -217,41 +217,27 @@ class Background(entities.Visible):
         self.image = pg.transform.rotate(self.ori_image, orient)
         self.rect = self.image.get_rect(center=self.rect.center)
 
-class Camera(pg.sprite.Sprite):
-    def __init__(self, center, ref = None):
-        super().__init__()
-        
-        #self.center = pg.display.get_surface().get_rect().center
-        self.center = center
-        self.ref = ref
-
-        self.loc_x = 0
-        self.loc_y = 0
-        self.o = 0
-        self.orient = self.o - 90
+class Camera():
+    def __init__(self, follow = None):
+        self.loc = pg.math.Vector2(0, 0)
+        self.orientation = 0
+        self.follow = follow
+        self.center = pg.math.Vector2(pg.display.get_surface().get_rect().center)
 
     def update(self):
-        super().update()
-        if self.ref is None:
+        if self.follow is None:
             return
-        dx = self.loc_x - self.ref.loc_x
-        dy = self.loc_y - self.ref.loc_y
-        do = self.o - self.ref.orient
-        if abs(dx) < 2:
-            self.loc_x = self.ref.loc_x
-        else:
-            self.loc_x -= dx/2
 
-        if abs(dy) < 2:
-            self.loc_y = self.ref.loc_y
+        if self.loc.squared_distance_to(self.follow.loc) < 25:
+            self.loc = self.follow.loc.copy()
         else:
-            self.loc_y -= dy/2
-        
-        if abs(do) < 30:
-            self.o = self.ref.orient
+            self.loc = self.loc.lerp(self.follow.loc, 0.3)
+
+        dif = self.orientation - self.ref.orientation
+        if abs(do) < 10:
+            self.orientation = self.ref.orientation
         else:
-            self.o -= do/2
-        self.orient = self.o - 90
+            self.orientation -= do/2
 
 if __name__ == "__main__":
     pg.init()
