@@ -1,6 +1,7 @@
 import json
 import os
 import pygame as pg
+import pygame.freetype as ftype
 
 config = None
 trans_table = None
@@ -9,8 +10,9 @@ loading_image = None
 def init():
     global config, trans_table
     config = read_config('config.json')
-    with open('data/lang/{}.json'.format(config['language']), 'r') as f:
+    with open('data/lang/{}.json'.format(config['language']), 'r', encoding='utf8') as f:
         trans_table = json.load(f)
+    ftype.init()
 
 def get_word(text):
     global trans_table
@@ -34,9 +36,9 @@ def write_config(filename, config):
 
 def get_font(size):
     try:
-        return pg.font.SysFont(config['font'], int(size*config['font_size']))
+        return ftype.SysFont(config['font'], int(size*config['font_size']))
     except:
-        return pg.font.SysFont('Calibri', size)
+        return ftype.SysFont(None, size)
 
 def load_image(filename, rect = None, colorkey = None):
     filename = os.path.join('res', filename)
@@ -79,8 +81,7 @@ def show_loading_page():
     global loading_image
     if loading_image == None:
         loading_image = load_image('basic/loading_page.png', pg.display.get_surface().get_rect())
-        font = get_font(32)
-        loading_image.blit(font.render(get_word('loading...'), True, (50, 100, 150)), (20,20))
+        get_font(32).render_to(loading_image, (100, 100), get_word('loading...'), (50, 100, 150))
     pg.display.get_surface().blit(loading_image, (0,0))
     pg.display.update()
 
@@ -88,20 +89,16 @@ def show_loading_page():
 class Button():
     def __init__(self, text, images):
         global trans_table
-        if text in trans_table.keys():
-            text = trans_table[text]
-        self.text = text
+        text = get_word(text)
         rect = images[0].get_rect()
 
         font = get_font(int(rect.height/2))
-        font = font.render(text, True, (251,254,110), (0,0,0))
-        font.set_colorkey((0,0,0))
-        font_rect = font.get_rect()
+        font_rect = font.get_rect(text)
         font_rect.center = rect.center
         self.up = images[0].copy()
-        self.up.blit(font, font_rect)
+        font.render_to(self.up, font_rect, text, (251,254,110))
         self.down = images[1].copy()
-        self.down.blit(font, font_rect)
+        font.render_to(self.down, font_rect, text, (251,254,110))
 
 class Button_Box():
     def __init__(self, rect, button_names, picture=None, margin=10):
@@ -124,9 +121,7 @@ class Button_Box():
         self.buttons = [Button(text, (self.up_image, self.down_image)) for text in button_names]
 
     def draw(self):
-        if self.picture is None:
-            self.screen.fill((0,0,0))
-        else:
+        if self.picture is not None:
             self.screen.blit(self.picture, self.picture.get_rect())
 
         for i in range(self.curser):
@@ -135,7 +130,7 @@ class Button_Box():
         for i in range(self.curser+1, len(self.buttons)):
             self.screen.blit(self.buttons[i].up, (self.rect.x, self.rect.y+self.margin + i*(self.margin+self.button_rect.h)))
 
-        pg.display.update()
+        pg.display.update(self.rect)
 
     def start(self):
         self.running = True
@@ -178,9 +173,7 @@ class Rolling_Box(Button_Box):
         self.buttons = [Button(text, (self.up_image, self.down_image)) for text in button_names]
 
     def draw(self):
-        if self.picture is None:
-            self.screen.fill((0,0,0))
-        else:
+        if self.picture is not None:
             self.screen.blit(self.picture, self.picture.get_rect())
 
         rolling_area = pg.Surface(self.rolling_rect.size, flags=pg.SRCALPHA)
@@ -195,7 +188,7 @@ class Rolling_Box(Button_Box):
         pg.draw.line(rolling_area, (251,254,110), start_pos, end_pos, self.margin)
         
         self.screen.blit(rolling_area, self.rect, area=self.rect.move(0, self.offset*self.curser))
-        pg.display.update()
+        pg.display.update(self.rect)
 
 def load_sound(filename):
     class NoneSound:

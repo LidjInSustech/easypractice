@@ -1,24 +1,24 @@
 {
     "words":{
-        "start": "¿ªÊ¼",
-        "alter skills": "ĞŞ¸Ä¼¼ÄÜ",
-        "alter weapons": "ĞŞ¸Ä×°±¸",
-        "set keys": "ÉèÖÃ°´¼ü",
-        "settings": "ÉèÖÃ",
-        "exit": "ÍË³ö",
-        "Welcome to the game!": "»¶Ó­À´µ½ÓÎÏ·£¡",
+        "start": "å¼€å§‹",
+        "alter skills": "ä¿®æ”¹æŠ€èƒ½",
+        "alter weapons": "ä¿®æ”¹è£…å¤‡",
+        "set keys": "è®¾ç½®æŒ‰é”®",
+        "settings": "è®¾ç½®",
+        "exit": "é€€å‡º",
+        "Welcome to the game!": "æ¬¢è¿æ¥åˆ°æ¸¸æˆï¼",
     
-        "default": "ÖØÖÃ",
-        "confirm": "È·¶¨",
-        "Press any key:" : "°´ÏÂÈÎÒâ°´¼ü£º",
+        "default": "é‡ç½®",
+        "confirm": "ç¡®å®š",
+        "Press any key:" : "æŒ‰ä¸‹ä»»æ„æŒ‰é”®ï¼š",
 
-        "continue": "¼ÌĞø",
-        "main page": "»Øµ½Ö÷Ò³",
+        "continue": "ç»§ç»­",
+        "main page": "å›åˆ°ä¸»é¡µ",
 
-        "You win!": "ÄãÓ®ÁË£¡",
-        "You lose!": "ÄãÊäÁË£¡",
+        "You win!": "ä½ èµ¢äº†ï¼",
+        "You lose!": "ä½ è¾“äº†ï¼",
 
-        "loading...": "¼ÓÔØÖĞ..."
+        "loading...": "åŠ è½½ä¸­..."
     },
     "skills":{}
 }
