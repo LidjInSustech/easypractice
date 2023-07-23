@@ -42,6 +42,8 @@ def get_font(size):
 
 def load_image(filename, rect = None, colorkey = None):
     filename = os.path.join('res', filename)
+    if isinstance(rect, pg.Rect):
+        rect = rect.size
 
     try:
         image = pg.image.load(filename)
@@ -51,7 +53,7 @@ def load_image(filename, rect = None, colorkey = None):
         return None
 
     if rect is not None:
-        image = pg.transform.scale(image, rect.size)
+        image = pg.transform.scale(image, rect)
 
     image = image.convert()
 
@@ -64,6 +66,8 @@ def load_image(filename, rect = None, colorkey = None):
 
 def load_image_alpha(filename, rect = None):
     filename = os.path.join('res', filename)
+    if isinstance(rect, pg.Rect):
+        rect = rect.size
 
     try:
         image = pg.image.load(filename)
@@ -73,7 +77,7 @@ def load_image_alpha(filename, rect = None):
         return None
 
     if rect is not None:
-        image = pg.transform.scale(image, rect.size)
+        image = pg.transform.scale(image, rect)
 
     return image.convert_alpha()
 

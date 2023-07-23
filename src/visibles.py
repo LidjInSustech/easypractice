@@ -10,15 +10,15 @@ class Visible(pg.sprite.Sprite):
         self.orientation = orientation
         self.origional_image = image
         self.rotate_image = rotate_image
-        self.update()
 
     def calculate_position(self):
         if self.camera is None:
             raise Exception('Camera is not set')
         self.draw_pos = self.loc - self.camera.loc
-        self.draw_pos.rotate_ip(-self.camera.orient)
+        self.draw_pos.rotate_ip(-self.camera.orientation-90)
+        self.draw_pos.reflect_ip(pg.math.Vector2(1,0))
         self.draw_pos += self.camera.center
-        self.draw_orient = self.orientation - self.camera.orient
+        self.draw_orient = self.orientation - self.camera.orientation
 
     def handle_image(self, source_image):
         self.calculate_position()
@@ -29,7 +29,8 @@ class Visible(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.draw_pos)
 
     def update(self):
-        self.handle_image(origional_image)
+        self.handle_image(self.origional_image)
+        super().update()
 
 class Accessory(Visible):
     def __init__(self, camera, owner, image = None, rotate_image = True):
@@ -68,25 +69,33 @@ class Field(Visible):
 class Entity(Field):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, mask_surface = None, rotate_image = True, properties = None):
         super().__init__(controller, loc, orientation, faction, image, mask_surface, rotate_image)
+        if properties is None:
+            properties = {}
         if 'max_hp' not in properties:
             properties['max_hp'] = 1000
-        if 'hp' not in properties:
-            properties['hp'] = properties['max_hp']
         if 'max_mp' not in properties:
             properties['max_mp'] = 1000
-        if 'mp' not in properties:
-            properties['mp'] = properties['max_mp']
         if 'mp_regen' not in properties:
             properties['mp_regen'] = 0
+        if 'speed' not in properties:
+            properties['speed'] = 5
+        
+        self.max_hp = properties['max_hp']
+        self.max_mp = properties['max_mp']
+        self.mp_regen = properties['mp_regen']
+        self.speed = properties['speed']
+        self.hp = self.max_hp
+        self.mp = self.max_mp
+
         self.properties = properties
         self.effects = []
 
     def update(self):
-        self.effect = filter(lambda x: x.update(), self.effects)
-        self.properties['mp'] += self.properties['mp_regen']
-        self.properties['mp'] = min(self.properties['mp'], self.properties['max_mp'])
-        self.properties['hp'] = min(self.properties['hp'], self.properties['max_hp'])
-        if self.properties['hp'] <= 0:
+        self.effects = filter(lambda x: x.update(), self.effects)
+        self.mp += self.mp_regen
+        self.mp = min(self.mp, self.max_mp)
+        self.hp = min(self.hp, self.max_hp)
+        if self.hp <= 0:
             self.kill()
         else:
             super().update()
@@ -94,17 +103,26 @@ class Entity(Field):
 class Movable(Entity):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, mask_surface = None, rotate_image = True, properties = None):
         super().__init__(controller, loc, orientation, faction, image, mask_surface, rotate_image, properties)
-        if 'speed' not in self.properties:
-            self.properties['speed'] = 5
+        self.colisions = []
+        self.last_loc = self.loc.copy()
+        self.handle_image(self.origional_image)
 
-    def move(relative_direction, distance):
-        colisions = []
-        for entity in self.controller.entities:
-            if entity.faction != self.faction and pg.sprite.collide_mask(self, entity):
-                colisions.append(entity)
+    def move(self, relative_direction = 0, distance = None):
+        if distance is None:
+            distance = self.speed
         move_vector = pg.math.Vector2.from_polar((distance, self.orientation + relative_direction))
         self.loc += move_vector
-        for entity in self.controller.entities:
-            if entity.faction != self.faction and pg.sprite.collide_mask(self, entity) and entity not in colisions:
-                self.loc -= move_vector
-                break
+
+    def update(self):
+        super().update()
+        colisions = []
+        for entitiy in self.controller.entities:
+            if entitiy.faction != self.faction:
+                if pg.sprite.collide_mask(self, entitiy):
+                    colisions.append(entitiy)
+        if len(colisions) <= len(self.colisions):
+            self.colisions = colisions
+            self.last_loc = self.loc.copy()
+        else:
+            self.loc = self.last_loc
+        
