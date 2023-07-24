@@ -2,7 +2,8 @@ import pygame as pg
 import visibles
 import math
 import util
-import keysetting
+import pages.key_setting
+import accessories
 
 class Controller():
     def __init__(self, original_size = None):
@@ -27,12 +28,17 @@ class Controller():
         self.camera.follow = self.player
         self.camera.loc = self.player.loc.copy()
         self.camera.orientation = self.player.orientation
-        self.entities.add(self.player)
+        self.load_entity(self.player)
 
     def load_floor(self, floor_image):
         if self.player is None:
             raise Exception('Please load player first')
         self.floor = visibles.Visible(self.camera, image = floor_image)
+
+    def load_entity(self, entity):
+        self.entities.add(entity)
+        self.acessories.add(accessories.Direction_indicator(entity))
+        self.acessories.add(accessories.State_bar(entity))
 
     def start(self):
         self.keys = util.read_config('key_setting.json')
@@ -109,7 +115,7 @@ class Controller():
             message = menu.start()
             while message == 1 or message == 2:
                 if message == 1:
-                    keysetting.KeySetting().start()
+                    pages.key_setting.Page().start()
                     self.keys = util.read_config('key_setting.json')
                 #self.screen.fill((0,0,0))
                 message = menu.start()
@@ -139,7 +145,7 @@ class Controller():
         #elif self.keys['fast mode'] in self.pressed:
         #    self.hero.skills[0].act_withkey(self.hero, key, self.keys)
 
-    def drawUI(self):
+    def drawUI(self):#deprecated
         head = pg.transform.scale(self.hero.ori_image,(32,32))
         self.screen.blit(head, (4,4))
         width = 8

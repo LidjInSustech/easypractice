@@ -33,8 +33,8 @@ class Visible(pg.sprite.Sprite):
         super().update()
 
 class Accessory(Visible):
-    def __init__(self, camera, owner, drift = None, image = None, rotate_image = True):
-        super().__init__(camera, owner.loc, owner.orientation, image, rotate_image)
+    def __init__(self, owner, drift = None, image = None, rotate_image = True):
+        super().__init__(owner.camera, owner.loc, owner.orientation, image, rotate_image)
         self.owner = owner
         self.drift = drift
 
@@ -45,14 +45,16 @@ class Accessory(Visible):
         super().update()
 
     def update_location(self):
-        if self.drift is not None:
-            if self.rotate_image:
+        if self.drift is not None and self.rotate_image:
                 self.loc = self.owner.loc + self.drift.rotate(self.owner.orientation)
-            else:
-                self.loc = self.owner.loc + self.drift
         else:
             self.loc = self.owner.loc
         self.orientation = self.owner.orientation
+
+    def calculate_position(self):
+        super().calculate_position()
+        if self.drift is not None and not self.rotate_image:
+            self.draw_pos += self.drift
 
 class Field(Visible):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, rotate_image = True):
@@ -109,7 +111,7 @@ class Entity(Visible):
         super().kill()
 
 class Movable(Entity):
-    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = True, properties = None):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):
         super().__init__(controller, loc, orientation, faction, image, radius, rotate_image, properties)
 
     def move(self, relative_direction = 0, distance = None):

@@ -104,6 +104,18 @@ class Button():
         self.down = images[1].copy()
         font.render_to(self.down, font_rect, text, (251,254,110))
 
+class Label():
+    def __init__(self, text, image):
+        global trans_table
+        text = get_word(text)
+        rect = image.get_rect()
+
+        font = get_font(int(rect.height/2))
+        font_rect = font.get_rect(text)
+        font_rect.center = rect.center
+        self.image = image.copy()
+        font.render_to(self.image, font_rect, text, (251,254,110))
+
 class Button_Box():
     def __init__(self, rect, button_names, picture=None, margin=10):
         self.screen = pg.display.get_surface()
@@ -137,6 +149,8 @@ class Button_Box():
         pg.display.update(self.rect)
 
     def start(self):
+        self.screen.blit(self.picture, self.picture.get_rect())
+        pg.display.flip()
         self.running = True
         clock = pg.time.Clock()
         while self.running:
@@ -191,7 +205,7 @@ class Rolling_Box(Button_Box):
         end_pos = (self.rolling_rect.w, start_pos[1] + self.margin*2 + self.button_rect.h)
         pg.draw.line(rolling_area, (251,254,110), start_pos, end_pos, self.margin)
         
-        self.screen.blit(rolling_area, self.rect, area=self.rect.move(0, self.offset*self.curser))
+        self.screen.blit(rolling_area, self.rect, area=pg.Rect(0, self.offset*self.curser, self.rect.w, self.rect.h))
         pg.display.update(self.rect)
 
 def load_sound(filename):
