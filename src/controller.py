@@ -6,7 +6,7 @@ import pages.key_setting
 import accessories
 
 class Controller():
-    def __init__(self, original_size = None):
+    def __init__(self, original_size = (1024, 1024)):
         self.screen = pg.display.get_surface()
         if original_size is None:
             original_size = self.screen.get_size()
@@ -126,8 +126,9 @@ class Controller():
             if message == 4:
                 pg.quit()
                 exit()
-        #if key == self.keys['skill1']:
-        #    self.hero.skills[1].act_withkeys(self.hero, self.pressed, self.keys)
+        if key == self.keys['skill1']:
+            skill = self.player.skills[1]
+            skill.conduct(skill.get_direction(self.pressed, self.keys))
         #if key == self.keys['skill2']:
         #    self.hero.skills[2].act_withkeys(self.hero, self.pressed, self.keys)
         #if key == self.keys['skill3']:

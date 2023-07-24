@@ -12,7 +12,7 @@ class Field(visibles.Visible):
 
 class AccessoryField(Field):
     def __init__(self, owner, drift = None, image = None, rotate_image = True):
-        super().__init__(owner.controller, owner.loc, owner.orientation, image, rotate_image)
+        super().__init__(owner.controller, owner.loc, owner.orientation, owner.faction, image, rotate_image)
         self.owner = owner
         self.drift = drift
 
@@ -42,3 +42,26 @@ class FastMove(Field):
         if self.life_time <= 0:
             self.kill()
         super().update()
+
+class MagicBullet(AccessoryField):
+    def __init__(self, owner, image, properties = None):
+        if properties is None:
+            properties = {'size': 10, 'extension': 4, 'damage': 100}
+        extension = properties['extension']
+        super().__init__(owner, drift = pg.math.Vector2(2+extension/2, 0), image = image)
+        self.properties = properties
+        self.size = properties['size']
+        self.radius = self.size/2
+        self.damage = properties['damage']
+
+    def update(self):
+        super().update()
+        for entities in self.controller.entities:
+            if entities.faction != self.faction:
+                if self.touch(entities):
+                    entities.hp -= self.damage
+                    self.owner.kill()
+
+
+    def touch(self, entity):
+        return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
