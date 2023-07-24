@@ -101,13 +101,17 @@ class Controller():
         if key == pg.K_ESCAPE:
             self.state = 0
             button_names = ['continue', 'set keys', 'settings', 'main page', 'exit']
-            menu = util.Button_Box(self.screen.get_rect(), button_names, self.screen.copy())
+            rect = self.screen.get_rect()
+            rect.width = rect.width//2
+            rect.move_ip(rect.width//2, 0)
+            image = pg.transform.scale(self.predraw, self.screen.get_rect().size)
+            menu = util.Button_Box(rect, button_names, image)
             message = menu.start()
             while message == 1 or message == 2:
                 if message == 1:
                     keysetting.KeySetting().start()
                     self.keys = util.read_config('key_setting.json')
-                self.screen.fill((0,0,0))
+                #self.screen.fill((0,0,0))
                 message = menu.start()
             if message < 1:
                 self.state = 2
