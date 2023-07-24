@@ -55,15 +55,6 @@ class Accessory(Visible):
         super().calculate_position()
         if self.drift is not None and not self.rotate_image:
             self.draw_pos += self.drift
-
-class Field(Visible):
-    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, rotate_image = True):
-        self.controller = controller
-        self.faction = faction
-        super().__init__(controller.camera, loc, orientation, image, rotate_image)
-
-    def touch(self, entity):
-        return False
         
 class Entity(Visible):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = True, properties = None):
@@ -97,7 +88,7 @@ class Entity(Visible):
         self.alive = True
 
     def update(self):
-        self.effects = filter(lambda x: x.update(), self.effects)
+        self.effects = list(filter(lambda x: x.update(), self.effects))
         self.mp += self.mp_regen
         self.mp = min(self.mp, self.max_mp)
         self.hp = min(self.hp, self.max_hp)

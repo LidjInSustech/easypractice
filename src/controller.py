@@ -117,7 +117,6 @@ class Controller():
                 if message == 1:
                     pages.key_setting.Page().start()
                     self.keys = util.read_config('key_setting.json')
-                #self.screen.fill((0,0,0))
                 message = menu.start()
             if message < 1:
                 self.state = 2
@@ -140,10 +139,12 @@ class Controller():
         #if key == self.keys['skill6']:
         #    self.hero.skills[6].act_withkeys(self.hero, self.pressed, self.keys)
         #fast move
-        #if key == self.keys['fast mode']:
-        #    self.hero.skills[0].act_withkeys(self.hero, self.pressed, self.keys)
-        #elif self.keys['fast mode'] in self.pressed:
-        #    self.hero.skills[0].act_withkey(self.hero, key, self.keys)
+        if key == self.keys['fast mode']:
+            skill = self.player.skills[0]
+            skill.conduct(skill.get_direction(self.pressed, self.keys))
+        elif self.keys['fast mode'] in self.pressed:
+            skill = self.player.skills[0]
+            skill.conduct(skill.get_direction([key], self.keys))
 
     def drawUI(self):#deprecated
         head = pg.transform.scale(self.hero.ori_image,(32,32))
