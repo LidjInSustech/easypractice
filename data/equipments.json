@@ -1,0 +1,23 @@
+{
+    "weapons": {
+        "sword": [
+                ["attack", "plus", 5],
+                ["defense", "plus", 2]
+        ],
+        "wand": [
+                ["attack", "plus", 3],
+                ["defense", "plus", 1]
+        ],
+        "shield": [
+                ["defense", "proportion", 1]
+        ]
+    },
+    "equipments": {
+        "armor": [
+                ["defense", "plus", 5]
+        ],
+        "speed_ring": [
+                ["speed", "plus", 1]
+        ]
+    }
+}

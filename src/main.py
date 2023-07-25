@@ -5,6 +5,7 @@ import util
 import pages.key_setting
 import pages.skill_setting
 import pages.settings
+import pages.equiptment_setting
 import skills.skills
 
 def load_game():
@@ -46,6 +47,9 @@ if __name__ == "__main__":
         if buttons[message] == 'settings':
             util.show_loading_page()
             pages.settings.Page().start()
+        if buttons[message] == 'alter weapons':
+            util.show_loading_page()
+            pages.equiptment_setting.Page().start()
         message = main_page.start()
     
     pg.quit()

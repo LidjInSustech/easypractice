@@ -18,6 +18,10 @@ def load_text(filename):
     with open('data/lang/{}/{}.json'.format(config['language'], filename), 'r', encoding='utf8') as f:
         return json.load(f)
 
+def load_data(filename):
+    with open('data/{}.json'.format(filename), 'r', encoding='utf8') as f:
+        return json.load(f)
+
 def get_word(text):
     global trans_table
     words = trans_table
@@ -153,8 +157,9 @@ class Button_Box():
         pg.display.update(self.rect)
 
     def start(self):
-        self.screen.blit(self.picture, self.picture.get_rect())
-        pg.display.flip()
+        if self.picture is not None:
+            self.screen.blit(self.picture, self.picture.get_rect())
+            pg.display.flip()
         self.running = True
         clock = pg.time.Clock()
         while self.running:

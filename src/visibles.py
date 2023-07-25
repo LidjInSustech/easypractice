@@ -71,6 +71,10 @@ class Entity(Visible):
             properties['mp_regen'] = 0
         if 'speed' not in properties:
             properties['speed'] = 5
+        if 'defense' not in properties:
+            properties['defense'] = 0
+        if 'attack' not in properties:
+            properties['attack'] = 1
         
         self.properties = properties
         self.hp = self.max_hp

@@ -1,0 +1,26 @@
+{
+    "weapons": {
+        "sword": {
+            "name": "剑",
+            "desc": "普通的剑"
+        },
+        "wand": {
+            "name": "魔杖",
+            "desc": "普通的魔杖"
+        },
+        "shield": {
+            "name": "盾",
+            "desc": "普通的盾"
+        }
+    },
+    "equipments": {
+        "armor": {
+            "name": "盔甲",
+            "desc": "普通的盔甲"
+        },
+        "speed_ring": {
+            "name": "速度戒指",
+            "desc": "有加速效果戒指"
+        }
+    }
+}
