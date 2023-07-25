@@ -3,6 +3,7 @@ import visibles
 import math
 import util
 import pages.key_setting
+import pages.settings
 import accessories
 
 class Controller():
@@ -117,9 +118,11 @@ class Controller():
                 if message == 1:
                     pages.key_setting.Page().start()
                     self.keys = util.read_config('key_setting.json')
+                if message == 2:
+                    pages.settings.Page().start()
                 message = menu.start()
             if message < 1:
-                self.state = 2
+                self.state = 1
                 return
             if message == 3:
                 return

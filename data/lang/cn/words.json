@@ -1,0 +1,38 @@
+{
+    "start": "开始",
+    "alter skills": "修改技能",
+    "alter weapons": "修改装备",
+    "set keys": "设置按键",
+    "settings": "设置",
+    "exit": "退出",
+    "Welcome to the game!": "欢迎来到游戏！",
+    
+    "up": "上",
+    "down": "下",
+    "left": "左",
+    "right": "右",
+    "turn left": "左转",
+    "turn right": "右转",
+    "fast mode": "快速模式",
+    "skill1": "技能1",
+    "skill2": "技能2",
+    "skill3": "技能3",
+    "skill4": "技能4",
+    "skill5": "技能5",
+    "skill6": "技能6",
+    "default": "重置",
+    "confirm": "确定",
+    "Press any key:" : "按下任意按键：",
+
+    "continue": "继续",
+    "main page": "回到主页",
+
+    "language": "语言",
+    "font_size": "字体大小",
+    "font_style": "字体样式",
+
+    "You win!": "你赢了！",
+    "You lose!": "你输了！",
+
+    "loading...": "加载中..."
+}

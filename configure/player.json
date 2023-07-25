@@ -1,0 +1,17 @@
+{
+    "properties":{
+        "max_hp": 1000,
+        "max_mp": 1000,
+        "mp_regen": 1,
+        "speed": 5
+    },
+    "primary weapon": {
+        "name": null,
+        "skills":[]
+    },
+    "sub weapon": {
+        "name": null,
+        "skills":[]
+    },
+    "equipment": []
+}

@@ -10,13 +10,17 @@ loading_image = None
 def init():
     global config, trans_table
     config = read_config('config.json')
-    with open('data/lang/{}.json'.format(config['language']), 'r', encoding='utf8') as f:
-        trans_table = json.load(f)
+    trans_table = load_text('words')
     ftype.init()
+
+def load_text(filename):
+    global config
+    with open('data/lang/{}/{}.json'.format(config['language'], filename), 'r', encoding='utf8') as f:
+        return json.load(f)
 
 def get_word(text):
     global trans_table
-    words = trans_table['words']
+    words = trans_table
     if text in words.keys():
         return words[text]
     else:
@@ -36,7 +40,7 @@ def write_config(filename, config):
 
 def get_font(size):
     try:
-        return ftype.SysFont(config['font'], int(size*config['font_size']))
+        return ftype.SysFont(config['font_style'], int(size*config['font_size']))
     except:
         return ftype.SysFont(None, size)
 
@@ -214,5 +218,5 @@ def load_sound(filename):
             pass
     if not pg.mixer or not pg.mixer.get_init():
         return NoneSound()
-    sound = pg.mixer.Sound(filemane)
+    sound = pg.mixer.Sound(filename)
     return sound

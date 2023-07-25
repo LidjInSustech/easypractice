@@ -4,6 +4,7 @@ import visibles
 import util
 import pages.key_setting
 import pages.skill_setting
+import pages.settings
 import skills.skills
 
 def load_game():
@@ -42,6 +43,9 @@ if __name__ == "__main__":
         if buttons[message] == 'alter skills':
             util.show_loading_page()
             pages.skill_setting.Page().start()
+        if buttons[message] == 'settings':
+            util.show_loading_page()
+            pages.settings.Page().start()
         message = main_page.start()
     
     pg.quit()
