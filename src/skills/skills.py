@@ -9,7 +9,7 @@ class Skill():
     def __init__(self, owner, properties = None, accept_keys = None):
         self.owner = owner
         if properties is None:
-            properties = {}
+            properties = owner.properties
         self.update_properties(properties)
         self.accept_keys = accept_keys
 
@@ -28,6 +28,14 @@ class Skill():
                     return key_name
         return 'none'
 
+    @property
+    def cd(self):
+        return self.properties['cd']
+
+    @property
+    def time(self):
+        return self.properties['time']
+
 class FastMove(Skill):
     def __init__(self, owner, properties = None):
         self.image = pg.Surface((64, 64))
@@ -38,11 +46,13 @@ class FastMove(Skill):
         super().__init__(owner, properties, accept_keys)
         
     def update_properties(self, properties):
-        default = {'speed': 20, 'cd': 12, 'time': 4}
-        self.speed = properties.get('speed', self.owner.speed)*default['speed']
-        self.cd = properties.get('cd', 1)*default['cd']
-        self.time = properties.get('time', 1)*default['time']
-        self.image = pg.transform.scale(self.image, (self.speed*2, self.speed*2))
+        origin = {'speed': 20, 'cd': 12, 'time': 4}
+        origin['speed'] = properties.get('speed', 5)*origin['speed']
+        origin['cd'] = properties.get('x_cd', 1)*origin['cd']
+        origin['time'] = properties.get('x_time', 1)*origin['time']
+        self.properties = origin
+        image_size = origin['speed']*2
+        self.image = pg.transform.scale(self.image, (image_size, image_size))
 
     def conduct(self, direction):
         orientation = None
@@ -65,7 +75,7 @@ class FastMove(Skill):
             return
         self.owner.effects.append(effects.icon_countdown_effect('unstable', self.icon, self.cd))
         orientation += self.owner.orientation
-        self.owner.loc += pg.math.Vector2(1, 0).rotate(orientation)*self.speed
+        self.owner.loc += pg.math.Vector2(1, 0).rotate(orientation)*self.properties['speed']
         self.owner.controller.fields.add(fields.FastMove(self.owner, orientation, image = self.image))
         for e in self.owner.effects:
             if e.name == 'invincible':
@@ -87,26 +97,22 @@ class MagicBullet(Skill):
         super().__init__(owner, properties)
 
     def update_properties(self, properties):
-        default = {'max_hp': 100, 'speed': 1, 'size': 32, 'life': 100, 'damage': 100, 'cd': 1, 'extension': 4}
-        self.max_hp = properties.get('max_hp', 1)*default['max_hp']
-        self.speed = properties.get('speed', 5)*default['speed']
-        self.size = properties.get('size', 1)*default['size']
-        self.life = properties.get('life', 1)*default['life']
-        self.damage = properties.get('damage', 1)*default['damage']
-        self.cd = properties.get('cd', 1)*default['cd']
-        self.extension = properties.get('extension', 1)*default['extension']
-        self.images = [pg.transform.scale(image, (self.size, self.size)) for image in self.images]
-        self.field_image = pg.transform.scale(self.field_image, (self.size+self.extension, self.size+self.extension))
+        origin = {'max_hp': 100, 'max_mp': 0, 'mp_regen': 0, 'speed': 5, 'size': 8, 'life': 100, 'damage': 100, 'cd': 6, 'extension': 1.1}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*4
+        self.images = [pg.transform.scale(image, (image_size, image_size)) for image in self.images]
+        image_size = self.properties['size']*2*origin['extension']
+        self.field_image = pg.transform.scale(self.field_image, (image_size, image_size))
 
     def conduct(self, direction):
         if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
             return
         self.owner.effects.append(effects.countdown_effect('spell_cd', self.cd))
         orientation = self.owner.orientation
-        entity_properties = {'max_hp': self.max_hp, 'max_mp':0, 'mp_regen':0, 'speed': self.speed, 'size': self.size, 'life': self.life}
-        entity = entities.MagicBullet(self.owner, self.images, self.owner.loc.copy(), orientation, entity_properties)
+        entity = entities.MagicBullet(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
         self.owner.controller.entities.add(entity)
-        field_properties = {'size': self.size, 'extension': self.extension, 'damage': self.damage}
-        field = fields.MagicBullet(entity, self.field_image, field_properties)
+        field = fields.MagicBullet(entity, self.field_image, self.properties)
         self.owner.controller.fields.add(field)
         

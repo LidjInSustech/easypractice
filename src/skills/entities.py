@@ -17,11 +17,9 @@ class Fliping(visibles.Movable):
 
 class MagicBullet(Fliping):
     def __init__(self, owner, images, loc = pg.math.Vector2(), orientation = 0, properties = None):
-        if properties is None:
-            properties = {'max_hp': 100, 'max_mp':0, 'mp_regen':0, 'speed': 5, 'size': 10, 'life': 100}
-        super().__init__(owner, loc = loc, orientation = orientation, images = images, radius = properties['size']/2, properties = properties)
-        self.properties = properties
-        self.life = properties['life']
+        radius = properties.get('size', 32)
+        super().__init__(owner, loc = loc, orientation = orientation, images = images, radius = radius, properties = properties)
+        self.life = properties.get('life', 100)
 
     def update(self):
         self.life -= 1

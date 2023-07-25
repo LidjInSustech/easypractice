@@ -45,14 +45,10 @@ class FastMove(Field):
 
 class MagicBullet(AccessoryField):
     def __init__(self, owner, image, properties = None):
-        if properties is None:
-            properties = {'size': 10, 'extension': 4, 'damage': 100}
-        extension = properties['extension']
-        super().__init__(owner, drift = pg.math.Vector2(2+extension/2, 0), image = image)
         self.properties = properties
-        self.size = properties['size']
-        self.radius = self.size/2
-        self.damage = properties['damage']
+        self.radius = properties.get('size', 32)*properties.get('extension', 1.1)
+        self.damage = properties.get('damage', 100)
+        super().__init__(owner, drift = pg.math.Vector2(2*properties.get('extension', 1.1), 0), image = image)
 
     def update(self):
         super().update()

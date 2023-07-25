@@ -72,14 +72,10 @@ class Entity(Visible):
         if 'speed' not in properties:
             properties['speed'] = 5
         
-        self.max_hp = properties['max_hp']
-        self.max_mp = properties['max_mp']
-        self.mp_regen = properties['mp_regen']
-        self.speed = properties['speed']
+        self.properties = properties
         self.hp = self.max_hp
         self.mp = self.max_mp
 
-        self.properties = properties
         self.effects = []
 
         if radius is None:
@@ -87,9 +83,21 @@ class Entity(Visible):
         self.radius = radius
         self.alive = True
 
+    @property
+    def max_hp(self):
+        return self.properties['max_hp']
+
+    @property
+    def max_mp(self):
+        return self.properties['max_mp']
+
+    @property
+    def speed(self):
+        return self.properties['speed']
+
     def update(self):
         self.effects = list(filter(lambda x: x.update(), self.effects))
-        self.mp += self.mp_regen
+        self.mp += self.properties['mp_regen']
         self.mp = min(self.mp, self.max_mp)
         self.hp = min(self.hp, self.max_hp)
         if self.hp <= 0:
@@ -100,6 +108,14 @@ class Entity(Visible):
     def kill(self):
         self.alive = False
         super().kill()
+
+    def damage(self, value):
+        if any(e.name == 'invulnerable' for e in self.effects):
+            return
+        value -= self.properties.get('armor', 0)
+        if value > 0:
+            self.hp -= value
+        
 
 class Movable(Entity):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):
