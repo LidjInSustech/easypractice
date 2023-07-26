@@ -19,11 +19,16 @@ def load_game():
     ctrler.load_entity(entity)
     ctrler.start()
 
+def get_size():
+    desktop_size = pg.display.get_desktop_sizes()[0]
+    unit = min(desktop_size[0]/3, desktop_size[1]/2) - 10
+    return (int(unit*3), int(unit*2))
+
 if __name__ == "__main__":
     pg.init()
     util.init()
     pg.display.set_caption('Game')
-    screen = pg.display.set_mode()
+    screen = pg.display.set_mode(get_size())
     size = screen.get_size()
     
     screen.fill((255, 255, 255))

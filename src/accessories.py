@@ -28,9 +28,9 @@ class State_bar(visibles.Accessory):
         hp = self.owner.hp/self.owner.max_hp
         hp = max(0, min(1, hp))
         hp = pg.math.lerp(0, self.length, hp)
-        self.origional_image.fill((255, 0, 0), (self.length - hp, 0, self.length, self.height))
+        self.origional_image.fill((255, 0, 0), (self.length - hp, 0, hp, self.height))
         mp = self.owner.mp/self.owner.max_mp
         mp = max(0, min(1, mp))
         mp = pg.math.lerp(0, self.length, mp)
-        self.origional_image.fill((0, 0, 255), (self.length, 0, self.length + mp, self.height))
+        self.origional_image.fill((0, 0, 255), (self.length, 0, mp, self.height))
         super().update()

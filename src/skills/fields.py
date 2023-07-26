@@ -58,6 +58,52 @@ class MagicBullet(AccessoryField):
                     entities.damage(self.attack)
                     self.owner.kill()
 
-
     def touch(self, entity):
         return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
+
+class Cut(Field):
+    def __init__(self, owner, loc, orientation, images, properties = None, side = False):
+        self.properties = properties
+        self.side = side
+        self.radius = properties.get('size', 128)*properties.get('extension', 1)
+        self.attack = properties.get('attack', 100)
+        self.life = properties.get('base_cd', 10)
+        self.life = max(self.life, 5)
+        self.images = images
+        self.owner = owner
+        super().__init__(owner.controller, loc = loc, orientation = orientation, faction = owner.faction, image = images[0], rotate_image = True)
+        super().update()
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+        elif self.life == 4:
+            self.origional_image = self.images[0].copy()
+            self.origional_image.blit(self.images[1], (0,0))
+            super().update()
+        elif self.life == 2:
+            self.origional_image = self.images[0].copy()
+            self.origional_image.blit(self.images[2], (0,0))
+            super().update()
+            
+            if self.side:
+                self.owner.orientation = self.orientation
+
+            for entities in self.controller.entities:
+                if entities.faction != self.faction:
+                    if self.touch(entities):
+                        entities.damage(self.attack)
+
+    def touch(self, entity):
+        if self.side:
+            angles = (90, 270)
+        else:
+            angles = (60, 300)
+
+        if entity.faction != self.faction:
+            vector = entity.loc - self.loc
+            if vector.length_squared() <= (entity.radius + self.radius)**2:
+                r, phi = vector.as_polar()
+                if (phi - self.orientation)%360 < angles[0] or (phi - self.orientation)%360 > angles[1]:
+                    entity.damage(self.attack)

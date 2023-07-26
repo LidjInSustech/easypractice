@@ -126,6 +126,8 @@ class Movable(Entity):
         super().__init__(controller, loc, orientation, faction, image, radius, rotate_image, properties)
 
     def move(self, relative_direction = 0, distance = None):
+        if any([effects.name == 'unmovable' for effects in self.effects]):
+            return
         if distance is None:
             distance = self.speed
         collision = []

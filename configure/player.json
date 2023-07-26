@@ -9,9 +9,9 @@
     "primary weapon": {
         "name": "sword",
         "skills": [
+            "FastCut",
+            "HeavyCut",
             "MagicBullet",
-            "Skill",
-            "Skill",
             "Skill",
             "Skill",
             "Skill"
@@ -20,7 +20,7 @@
     "sub weapon": {
         "name": "shield",
         "skills": [
-            "FastMove",
+            "MagicBullet",
             "Skill",
             "Skill",
             "Skill",
