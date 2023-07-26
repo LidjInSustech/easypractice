@@ -1,5 +1,3 @@
-import pygame as pg
-import math
 
 class effect():
     def __init__(self, name):

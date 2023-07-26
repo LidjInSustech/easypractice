@@ -47,7 +47,7 @@ class MagicBullet(AccessoryField):
     def __init__(self, owner, image, properties = None):
         self.properties = properties
         self.radius = properties.get('size', 32)*properties.get('extension', 1.1)
-        self.damage = properties.get('damage', 100)
+        self.attack = properties.get('attack', 100)
         super().__init__(owner, drift = pg.math.Vector2(2*properties.get('extension', 1.1), 0), image = image)
 
     def update(self):
@@ -55,7 +55,7 @@ class MagicBullet(AccessoryField):
         for entities in self.controller.entities:
             if entities.faction != self.faction:
                 if self.touch(entities):
-                    entities.hp -= self.damage
+                    entities.damage(self.attack)
                     self.owner.kill()
 
 

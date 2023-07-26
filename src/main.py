@@ -1,6 +1,7 @@
 import pygame as pg
 import controller
 import visibles
+import entities
 import util
 import pages.key_setting
 import pages.skill_setting
@@ -10,7 +11,7 @@ import skills.skills
 
 def load_game():
     ctrler = controller.Controller()
-    player = visibles.Movable(ctrler, pg.math.Vector2(-100,0), 0, 1, util.load_image_alpha('entities/human0.png',(64,64)))
+    player = entities.Player(ctrler, pg.math.Vector2(-100, 0), 0, util.load_image_alpha('entities/human0.png',(64,64)))
     player.skills = [skills.skills.FastMove(player), skills.skills.MagicBullet(player)]
     ctrler.load_player(player)
     ctrler.load_floor(util.load_image('floor/bigBackground.png',(1024,1024), (0,0,0)))

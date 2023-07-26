@@ -28,14 +28,6 @@ class Skill():
                     return key_name
         return 'none'
 
-    @property
-    def cd(self):
-        return self.properties['cd']
-
-    @property
-    def time(self):
-        return self.properties['time']
-
 class FastMove(Skill):
     def __init__(self, owner, properties = None):
         self.image = pg.Surface((64, 64))
@@ -46,10 +38,10 @@ class FastMove(Skill):
         super().__init__(owner, properties, accept_keys)
         
     def update_properties(self, properties):
-        origin = {'speed': 20, 'cd': 12, 'time': 4}
+        origin = {'speed': 20, 'cd': 12, 'benefit_time': 4}
         origin['speed'] = properties.get('speed', 5)*origin['speed']
         origin['cd'] = properties.get('x_cd', 1)*origin['cd']
-        origin['time'] = properties.get('x_time', 1)*origin['time']
+        origin['benefit_time'] = properties.get('x_benefit_time', 1)*origin['benefit_time']
         self.properties = origin
         image_size = origin['speed']*2
         self.image = pg.transform.scale(self.image, (image_size, image_size))
@@ -73,15 +65,15 @@ class FastMove(Skill):
             return
         if any([e.name == 'unstable' for e in self.owner.effects]):
             return
-        self.owner.effects.append(effects.icon_countdown_effect('unstable', self.icon, self.cd))
+        self.owner.effects.append(effects.icon_countdown_effect('unstable', self.icon, self.properties['cd']))
         orientation += self.owner.orientation
         self.owner.loc += pg.math.Vector2(1, 0).rotate(orientation)*self.properties['speed']
         self.owner.controller.fields.add(fields.FastMove(self.owner, orientation, image = self.image))
         for e in self.owner.effects:
             if e.name == 'invincible':
-                e.time += self.time
+                e.time += self.properties['benefit_time']
                 return
-        self.owner.effects.append(effects.countdown_effect('invincible', self.time))
+        self.owner.effects.append(effects.countdown_effect('invincible', self.properties['benefit_time']))
 
 class MagicBullet(Skill):
     def __init__(self, owner, properties = None):
@@ -97,7 +89,8 @@ class MagicBullet(Skill):
         super().__init__(owner, properties)
 
     def update_properties(self, properties):
-        origin = {'max_hp': 100, 'max_mp': 0, 'mp_regen': 0, 'speed': 5, 'size': 8, 'life': 100, 'damage': 100, 'cd': 6, 'extension': 1.1}
+        origin = {'max_hp': 100, 'max_mp': 0, 'mp_regen': 0, 'speed': 5, 'size': 8, 'life': 100, 'attack': 100, 'cd': 6, 'extension': 1.1}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
         self.properties = origin
@@ -109,7 +102,7 @@ class MagicBullet(Skill):
     def conduct(self, direction):
         if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
             return
-        self.owner.effects.append(effects.countdown_effect('spell_cd', self.cd))
+        self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
         orientation = self.owner.orientation
         entity = entities.MagicBullet(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
         self.owner.controller.entities.add(entity)

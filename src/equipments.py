@@ -1,14 +1,5 @@
 import util
 
-def load():
-    return util.load_data('equipments')
-
-def get_equipment(name, weapon = False):
-    if weapon:
-        return equipment(name, equipments['weapon'][name])
-    else:
-        return equipment(name, equipments['equipment'][name])
-
 class equipment():
     def __init__(self, name, properties):
         self.name = name
@@ -22,9 +13,11 @@ class equipment():
         for key, operon, value in self.properties:
             match operon:
                 case 'plus':
-                    player.properties[key] += value
+                    player.properties[key] = player.properties.get(key, 1) + value
                     self.record[key] = value
                 case 'proportion':
+                    if key not in player.properties:
+                        player.properties[key] = 1
                     value_ = player.properties[key] * value
                     player.properties[key] += value_
                     self.record[key] = value_
@@ -33,6 +26,21 @@ class equipment():
     def unequip(self, player):
         if not self.equipped:
             return
-        for key, value in self.record:
+        for key, value in self.record.items():
             player.properties[key] -= value
         self.equipped = False
+
+def load():
+    return util.load_data('equipments')
+
+def get_weapon(name):
+    try:
+        return equipment(name, load()['weapons'][name])
+    except KeyError:
+        return None
+
+def get_equipment(name):
+    try:
+        return equipment(name, load()['equipments'][name])
+    except KeyError:
+        return None

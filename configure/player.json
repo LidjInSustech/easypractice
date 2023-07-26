@@ -3,7 +3,8 @@
         "max_hp": 1000,
         "max_mp": 1000,
         "mp_regen": 1,
-        "speed": 5
+        "speed": 5,
+        "attack": 100
     },
     "primary weapon": {
         "name": "sword",
@@ -19,7 +20,7 @@
     "sub weapon": {
         "name": "shield",
         "skills": [
-            "MagicBullet",
+            "FastMove",
             "Skill",
             "Skill",
             "Skill",

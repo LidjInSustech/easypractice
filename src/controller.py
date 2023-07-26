@@ -129,26 +129,21 @@ class Controller():
             if message == 4:
                 pg.quit()
                 exit()
-        if key == self.keys['skill1']:
-            skill = self.player.skills[1]
-            skill.conduct(skill.get_direction(self.pressed, self.keys))
-        #if key == self.keys['skill2']:
-        #    self.hero.skills[2].act_withkeys(self.hero, self.pressed, self.keys)
-        #if key == self.keys['skill3']:
-        #    self.hero.skills[3].act_withkeys(self.hero, self.pressed, self.keys)
-        #if key == self.keys['skill4']:
-        #    self.hero.skills[4].act_withkeys(self.hero, self.pressed, self.keys)
-        #if key == self.keys['skill5']:
-        #    self.hero.skills[5].act_withkeys(self.hero, self.pressed, self.keys)
-        #if key == self.keys['skill6']:
-        #    self.hero.skills[6].act_withkeys(self.hero, self.pressed, self.keys)
-        #fast move
+        # skills
+        for i in range(1, 7):
+            if key == self.keys[f'skill{i}']:
+                skill = self.player.weapon.skills[i]
+                skill.conduct(skill.get_direction(self.pressed, self.keys))
+        # fast move
         if key == self.keys['fast mode']:
-            skill = self.player.skills[0]
+            skill = self.player.weapon.skills[0]
             skill.conduct(skill.get_direction(self.pressed, self.keys))
         elif self.keys['fast mode'] in self.pressed:
-            skill = self.player.skills[0]
+            skill = self.player.weapon.skills[0]
             skill.conduct(skill.get_direction([key], self.keys))
+        # switch weapon
+        if key == self.keys['alter arm']:
+            self.player.switch_weapon()
 
     def drawUI(self):#deprecated
         head = pg.transform.scale(self.hero.ori_image,(32,32))
