@@ -1,4 +1,5 @@
 import pygame as pg
+import math
 import visibles
 
 class Field(visibles.Visible):
@@ -221,3 +222,98 @@ class HelixCut(AccessoryField):
                 if (phi - self.orientation)%360 < angles[0] or (phi - self.orientation)%360 > angles[1]:
                     return True
         return False
+
+class Laser(Field):
+    def __init__(self, owner, orient_drift, properties = None):
+        super().__init__(owner.controller, loc = owner.loc, orientation = owner.orientation + orient_drift, faction = owner.faction, image = 'red')
+        self.owner = owner
+        self.properties = properties
+        self.width = properties.get('size', 2)*properties.get('extension', 1)
+        self.attack = properties.get('attack', 100)
+        self.representation = pg.math.Vector2.from_polar((1, owner.orientation + orient_drift))
+        self.length = self.get_length()
+        self.handle_image('red')
+        self.life = 6
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+        elif self.life > 2:
+            return
+        elif self.life == 2:
+            self.origional_image = 'white'
+            for e in self.controller.entities:
+                if self.touch(e):
+                    e.damage(self.attack)
+        self.loc = self.owner.loc
+        self.length = self.get_length()
+        super().update()
+
+    def handle_image(self, source_image):
+        length = self.length
+        self.calculate_position()
+        draw_orient = self.draw_orient
+        image_vector = pg.math.Vector2.from_polar((length, draw_orient))
+
+        image = pg.Surface((abs(image_vector.y)+self.width, abs(image_vector.x)+self.width))
+        rect = image.get_rect()
+        image.set_colorkey((0,0,0))
+        if source_image == 'red':
+            image.set_alpha(80)
+            color = (255,0,0)
+        else:
+            color = (255,255,255)
+        draw_orient = draw_orient%180
+        if draw_orient < 90:
+            pg.draw.line(image, color, (0,0), rect.size, self.width*2)
+        else:
+            pg.draw.line(image, color, (0,rect.height), (rect.width,0), self.width*2)
+        self.image = image
+
+        draw_orient = self.draw_orient%360
+        if draw_orient > 180:
+            rect.left = self.draw_pos.x
+        else:
+            rect.right = self.draw_pos.x
+        if draw_orient > 90 and draw_orient < 270:
+            rect.top = self.draw_pos.y
+        else:
+            rect.bottom = self.draw_pos.y
+        self.rect = rect
+
+    def touch(self, entity):
+        if entity.faction != self.faction:
+            base = self.representation
+            vector = entity.loc - self.loc
+            if abs(base.cross(vector)) < self.width/2 + entity.radius:
+                dot = base.dot(vector)
+                if dot < self.length + entity.radius + 1 and dot > 0:
+                    return True
+        return False
+
+    def get_length(self):
+        representation = self.representation
+        loc = self.loc
+        min_length = self.boundary_length()
+        for e in self.controller.entities:
+            if e.faction != self.faction:
+                vector = e.loc - self.loc
+                if abs(representation.cross(vector)) < self.width/2 + e.radius:
+                    length = representation.dot(vector)
+                    if length > 0:
+                        min_length = min(min_length, length)
+        return min_length
+
+    def boundary_length(self):
+        representation = self.representation
+        loc = self.loc
+        if representation.x >= 0:
+            x_length = self.controller.boundary.x - loc.x
+        elif representation.x < 0:
+            x_length = self.controller.boundary.x + loc.x
+        if representation.y >= 0:
+            y_length = self.controller.boundary.y - loc.y
+        elif representation.y < 0:
+            y_length = self.controller.boundary.y + loc.y
+        return min(x_length/abs(representation.x), y_length/abs(representation.y))

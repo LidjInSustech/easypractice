@@ -450,6 +450,26 @@ class Transposition(Skill):
                 self.owner.loc = self.mark.loc.copy()
                 self.owner.orientation = self.mark.orientation
             
+class Laser(Skill):
+    def __init__(self, owner, properties = None):
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'mp_consumption': 100, 'cd': 6, 'attack': 100, 'size': 3}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+
+    def conduct(self, direction):
+        #if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+        #    return
+        #self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
+        #if not self.consume_mp():
+        #    return
+        #orientation = self.owner.orientation
+        field = fields.Laser(self.owner, 0, self.properties)
+        self.owner.controller.fields.add(field)
+
 
 dictionary = {
     'Skill': Skill,
@@ -465,5 +485,7 @@ dictionary = {
     'Healing': Healing,
     'HelixCut': HelixCut,
     'Transposition': Transposition,
-    'StoneSpike': None
+    'ToxicBall': None,
+    'Laser': Laser,
+    'StoneColumn': None
 }

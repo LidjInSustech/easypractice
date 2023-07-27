@@ -35,6 +35,8 @@ class Controller():
         if self.player is None:
             raise Exception('Please load player first')
         self.floor = visibles.Visible(self.camera, image = floor_image)
+        self.boundary = pg.math.Vector2(self.floor.origional_image.get_rect().height/2,
+         self.floor.origional_image.get_rect().width/2)
 
     def load_entity(self, entity):
         self.entities.add(entity)
@@ -167,8 +169,8 @@ class Controller():
                 count += 1
 
     def maintain_boundaries(self):
-        x_limit = self.floor.origional_image.get_rect().width//2
-        y_limit = self.floor.origional_image.get_rect().height//2
+        x_limit = self.boundary.x
+        y_limit = self.boundary.y
         for entity in self.entities:
             x = pg.math.clamp(entity.loc.x, -x_limit, x_limit)
             y = pg.math.clamp(entity.loc.y, -y_limit, y_limit)
