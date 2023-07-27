@@ -26,6 +26,8 @@ class Player(visibles.Movable):
 
     def switch_weapon(self):
         self.weapon.unequip(self)
+        for skill in self.weapon.skills:
+            skill.stop()
         self.weaponnum = 1 - self.weaponnum
         self.weapon.equip(self)
         for skill in self.weapon.skills:

@@ -191,3 +191,33 @@ class FireBallExplode(Field):
         if entity.faction != self.faction:
             return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
         return False
+
+class HelixCut(AccessoryField):
+    def __init__(self, owner, image, properties = None):
+        self.radius = properties.get('size', 64)*properties.get('extension', 1)
+        self.count = 3
+        self.damaged = []
+        super().__init__(owner, drift = None, orient_drift = 0, image = image, rotate_image = True)
+    
+    def update(self):
+        self.count = (self.count + 1)%3
+        if self.count == 0:
+            self.orient_drift = (self.orient_drift + 90)%360
+            self.damaged = []
+        super().update()
+        for e in self.controller.entities:
+            if self.touch(e):
+                self.damaged.append(e)
+                e.damage(100)
+    
+    def touch(self, entity):
+        if entity in self.damaged:
+            return False
+        angles = (45, 315)
+        if entity.faction != self.faction:
+            vector = entity.loc - self.loc
+            if vector.length_squared() <= (entity.radius + self.radius)**2:
+                r, phi = vector.as_polar()
+                if (phi - self.orientation)%360 < angles[0] or (phi - self.orientation)%360 > angles[1]:
+                    return True
+        return False

@@ -21,6 +21,9 @@ class Skill():
     def conduct(self, direction):
         return
 
+    def stop(self):
+        return
+
     def get_direction(self, key_pressed, key_map):
         if self.accept_keys is None:
             return 'none'
@@ -30,10 +33,12 @@ class Skill():
                     return key_name
         return 'none'
 
-    def consume_mp(self):
-        if self.properties.get('mp_consumption', 0) > self.owner.mp:
+    def consume_mp(self, value = None):
+        if value is None:
+            value = self.properties.get('mp_consumption', 0)
+        if value > self.owner.mp:
             return False
-        self.owner.mp -= self.properties.get('mp_consumption', 0)
+        self.owner.mp -= value
         return True
 
 class FastMove(Skill):
@@ -75,7 +80,7 @@ class FastMove(Skill):
         orientation += self.owner.orientation
         self.owner.loc += pg.math.Vector2(1, 0).rotate(orientation)*self.properties['speed']
         self.owner.controller.fields.add(fields.FastMove(self.owner, orientation, image = self.image))
-        self.owner.effect_extend('invincible', self.properties['benefit_time'])
+        self.owner.effect_extend(effects.countdown_effect('invincible', self.properties['benefit_time']))
         
 class MagicBullet(Skill):
     def __init__(self, owner, properties = None):
@@ -360,6 +365,92 @@ class Healing(Skill):
             return
         self.owner.effect_extend(E.Healing(self.owner, self.properties))
 
+class HelixCut(Skill):
+    def __init__(self, owner, properties = None):
+        image0 = util.load_image_alpha('skills/cut_f2.png')
+        rect = image0.get_rect()
+        image = pg.Surface(rect.size, flags=pg.SRCALPHA)
+        pg.draw.arc(image, (255,0,0,80), rect, math.pi/4, math.pi/4*3, width=int(rect.w/2))
+        image.blit(image0, (0, 0))
+        self.image = image
+        self.mark = None
+
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'speed':0.4 ,'size': 96, 'attack': 40, 'cd': 6, 'extension': 1, 'harmful_time': 10}
+        origin['speed'] = properties.get('speed', 5)*origin['speed']
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*2
+        self.image = pg.transform.scale(self.image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if self.mark is None:
+            if any([effects.name == 'unstable' for effects in self.owner.effects]):
+                return
+            if any([effects.name == 'sword_cd' for effects in self.owner.effects]):
+                return
+            self.owner.effects.append(effects.countdown_effect('sword_cd', self.properties['cd']))
+            self.owner.effects.append(effects.countdown_effect('unstable', self.properties['harmful_time']))
+            
+            field = fields.HelixCut(self.owner, self.image, self.properties)
+            effect = E.HelixCut(self.owner, field, self.properties)
+            self.owner.controller.fields.add(field)
+            self.owner.effects.append(effect)
+            self.owner.properties['speed'] -= self.properties['speed']
+            self.mark = effect
+        else:
+            self.mark.count = -1
+            self.mark = None
+
+    def stop(self):
+        if self.mark is not None:
+            self.mark.count = -1
+            self.mark = None
+
+class Transposition(Skill):
+    def __init__(self, owner, properties = None):
+        self.image = util.load_image_alpha('skills/transposition.png')
+        self.mark = None
+        super().__init__(owner, properties, accept_keys = ['down'])
+
+    def update_properties(self, properties):
+        origin = {'mp_consumption': 100, 'mp_consumption2': 200, 'cd': 6, 'harmful_time': 100}
+        origin['mp_consumption'] = properties.get('x_mp_consumption', 1)*origin['mp_consumption']
+        origin['mp_consumption2'] = properties.get('x_mp_consumption', 1)*origin['mp_consumption2']
+        origin['cd'] = properties.get('x_cd', 1)*origin['cd']
+        origin['harmful_time'] = properties.get('x_harmful_time', 1)*origin['harmful_time']
+        self.properties = origin
+
+    def conduct(self, direction):
+        if direction == 'down':
+            if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+                return
+            self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
+            if self.consume_mp():
+                field = fields.Field(self.owner.controller, loc = self.owner.loc.copy(),
+                 orientation = self.owner.orientation, image = self.image)
+                self.owner.controller.fields.add(field)
+                if self.mark is not None:
+                    self.mark.kill()
+                self.mark = field
+        else:
+            if self.mark is None:
+                return
+            if any([effects.name == 'transposition_cd' for effects in self.owner.effects]):
+                return
+            if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+                return
+            self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
+            self.owner.effects.append(effects.countdown_effect('transposition_cd', self.properties['harmful_time']))
+            if self.consume_mp(self.properties['mp_consumption2']):
+                self.owner.loc = self.mark.loc.copy()
+                self.owner.orientation = self.mark.orientation
+            
+
 dictionary = {
     'Skill': Skill,
     'FastMove': FastMove,
@@ -372,6 +463,7 @@ dictionary = {
     'FireBall': FireBall,
     'Heal': Heal,
     'Healing': Healing,
-    'HelixCut': None,
-    'Transposition': None
+    'HelixCut': HelixCut,
+    'Transposition': Transposition,
+    'StoneSpike': None
 }
