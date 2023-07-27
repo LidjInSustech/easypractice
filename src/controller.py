@@ -39,7 +39,7 @@ class Controller():
     def load_entity(self, entity):
         self.entities.add(entity)
         self.acessories.add(accessories.Direction_indicator(entity))
-        self.acessories.add(accessories.State_bar(entity))
+        self.acessories.add(accessories.State_ring(entity))
 
     def start(self):
         self.keys = util.read_config('key_setting.json')

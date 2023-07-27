@@ -53,14 +53,16 @@ class MagicBullet(AccessoryField):
 
     def update(self):
         super().update()
-        for entities in self.controller.entities:
-            if entities.faction != self.faction:
-                if self.touch(entities):
-                    entities.damage(self.attack)
-                    self.owner.kill()
+        for e in self.controller.entities:
+            if self.touch(e):
+                e.damage(self.attack)
+                self.owner.kill()
+                self.kill()
 
     def touch(self, entity):
-        return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
+        if entity.faction != self.faction:
+            return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
+        return False
 
 class Cut(AccessoryField):
     def __init__(self, owner, orient_drift, images, properties = None, side = False):
@@ -92,9 +94,8 @@ class Cut(AccessoryField):
                 self.owner.orientation = self.orientation
 
             for entities in self.controller.entities:
-                if entities.faction != self.faction:
-                    if self.touch(entities):
-                        entities.damage(self.attack)
+                if self.touch(entities):
+                    entities.damage(self.attack)
 
     def touch(self, entity):
         if self.side:
@@ -107,7 +108,8 @@ class Cut(AccessoryField):
             if vector.length_squared() <= (entity.radius + self.radius)**2:
                 r, phi = vector.as_polar()
                 if (phi - self.orientation)%360 < angles[0] or (phi - self.orientation)%360 > angles[1]:
-                    entity.damage(self.attack)
+                    return True
+        return False
 
 class Lunge(AccessoryField):
     def __init__(self, owner, orient_drift, images, properties = None, dash = 0):
@@ -140,9 +142,8 @@ class Lunge(AccessoryField):
             super().update()
 
             for entities in self.controller.entities:
-                if entities.faction != self.faction:
-                    if self.touch(entities):
-                        entities.damage(self.attack)
+                if self.touch(entities):
+                    entities.damage(self.attack)
 
     def touch(self, entity):
         if entity.faction != self.faction:
@@ -150,4 +151,43 @@ class Lunge(AccessoryField):
             vector = entity.loc - self.loc
             if abs(base.cross(vector)) < self.radius/2 + entity.radius:
                 if abs(base.dot(vector)) < self.radius + entity.radius:
-                    entity.damage(self.attack)
+                    return True
+        return False
+
+class FireBall(MagicBullet):
+    def __init__(self, owner, image, explode_image, properties = None):
+        self.explode_image = explode_image
+        self.properties = properties
+        self.radius = properties.get('size', 32)*properties.get('extension', 1.1)
+        self.attack = properties.get('attack', 50)
+        super().__init__(owner, image, properties)
+
+    def update(self):
+        super().update()
+        if not self.owner.alive:
+            explode = FireBallExplode(self, self.explode_image, self.properties)
+            self.controller.fields.add(explode)
+            explode.update()
+
+class FireBallExplode(Field):
+    def __init__(self, owner, image, properties = None):
+        self.properties = properties
+        self.radius = properties.get('size2', 64)*properties.get('extension', 1.1)
+        self.attack = properties.get('attack2', 200)
+        self.life = 5
+        super().__init__(owner.controller, loc = owner.loc, orientation = 0, faction = owner.faction, image = image, rotate_image = False)
+
+    def update(self):
+        if self.life == 5:
+            for e in self.controller.entities:
+                if self.touch(e):
+                    e.damage(self.attack)
+        self.life -= 1
+        if self.life <= 0:
+            self.kill()
+        super().update()
+
+    def touch(self, entity):
+        if entity.faction != self.faction:
+            return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
+        return False

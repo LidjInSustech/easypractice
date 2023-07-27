@@ -119,7 +119,13 @@ class Entity(Visible):
         value -= self.properties.get('armor', 0)
         if value > 0:
             self.hp -= value
-        
+
+    def effect_extend(self, effect):
+        for e in self.effects:
+            if e.name == effect.name:
+                e.life += effect.life
+                return
+        self.effects.append(effect)    
 
 class Movable(Entity):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):

@@ -4,6 +4,7 @@ import util
 import visibles
 import skills.entities as entities
 import skills.fields as fields
+import skills.effects as E
 import effects
 
 class Skill():
@@ -74,12 +75,8 @@ class FastMove(Skill):
         orientation += self.owner.orientation
         self.owner.loc += pg.math.Vector2(1, 0).rotate(orientation)*self.properties['speed']
         self.owner.controller.fields.add(fields.FastMove(self.owner, orientation, image = self.image))
-        for e in self.owner.effects:
-            if e.name == 'invincible':
-                e.time += self.properties['benefit_time']
-                return
-        self.owner.effects.append(effects.countdown_effect('invincible', self.properties['benefit_time']))
-
+        self.owner.effect_extend('invincible', self.properties['benefit_time'])
+        
 class MagicBullet(Skill):
     def __init__(self, owner, properties = None):
         self.images = []
@@ -95,7 +92,7 @@ class MagicBullet(Skill):
 
     def update_properties(self, properties):
         origin = {'max_hp': 100, 'max_mp': 0, 'mp_regen': 0, 'speed': 5, 'size': 8,
-         'life': 100, 'attack': 60, 'cd': 6, 'extension': 1.1, 'mp_consumption': 100}
+         'life': 150, 'attack': 60, 'cd': 6, 'extension': 1.1, 'mp_consumption': 100}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -229,7 +226,7 @@ class HeavyLunge(Skill):
 
 class FastLunge(HeavyLunge):
     def update_properties(self, properties):
-        origin = {'size': 64, 'attack': 60, 'cd': 4, 'extension': 1, 'harmful_time': 4, 'base_cd': 8, 'dash': 64}
+        origin = {'size': 48, 'attack': 60, 'cd': 4, 'extension': 1, 'harmful_time': 4, 'base_cd': 8, 'dash': 64}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -244,6 +241,125 @@ class FastLunge(HeavyLunge):
         self.f_images = [c_image, self.image1, self.image2, f_image]
         self.c_images = [c_image, self.image1, self.image2]
 
+class Missile(Skill):
+    def __init__(self, owner, properties = None):
+        self.images = []
+        self.images.append(util.load_image_alpha('skills/missile1.png'))
+        self.images.append(util.load_image_alpha('skills/missile2.png'))
+        self.images.append(util.load_image_alpha('skills/missile2.png'))
+        field_image = pg.Surface((32, 32))
+        pg.draw.circle(field_image, (255,0,0), (16, 16), 16)
+        field_image.set_colorkey((0,0,0))
+        field_image.set_alpha(80)
+        self.field_image = field_image
+        super().__init__(owner, properties)
+
+    def update_properties(self, properties):
+        origin = {'max_hp': 100, 'max_mp': 0, 'mp_regen': 0, 'speed': 4, 'size': 16,
+         'life': 300, 'attack': 60, 'cd': 6, 'extension': 1.1, 'mp_consumption': 200, 'sense': 384, 'turn': 1}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*4
+        self.images = [pg.transform.scale(image, (image_size, image_size)) for image in self.images]
+        image_size = self.properties['size']*2*origin['extension']
+        self.field_image = pg.transform.scale(self.field_image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+            return
+        self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
+        if not self.consume_mp():
+            return
+        orientation = self.owner.orientation
+        entity = entities.Missile(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
+        self.owner.controller.entities.add(entity)
+        field = fields.MagicBullet(entity, self.field_image, self.properties)
+        self.owner.controller.fields.add(field)
+
+class FireBall(Skill):
+    def __init__(self, owner, properties = None):
+        self.images = []
+        self.images.append(util.load_image_alpha('skills/fireball1.png'))
+        self.images.append(util.load_image_alpha('skills/fireball2.png'))
+        self.images.append(util.load_image_alpha('skills/fireball3.png'))
+        field_image = pg.Surface((32, 32))
+        pg.draw.circle(field_image, (255,0,0), (16, 16), 16)
+        field_image.set_colorkey((0,0,0))
+        field_image.set_alpha(80)
+        self.field_image = field_image
+        self.ex_image = util.load_image_alpha('skills/fireball_e.png')
+        super().__init__(owner, properties)
+
+    def update_properties(self, properties):
+        origin = {'max_hp': 200, 'max_mp': 0, 'mp_regen': 0, 'speed': 4, 'size': 32, 'size2': 128,
+         'life': 150, 'attack': 20, 'attack2': 200, 'cd': 6, 'extension': 1.1, 'mp_consumption': 200}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        origin['attack2'] = properties.get('attack', 100)*origin['attack2']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        origin['size2'] = properties.get('x_size', 1)*origin['size2']
+        self.properties = origin
+        image_size = self.properties['size']*4
+        self.images = [pg.transform.scale(image, (image_size, image_size)) for image in self.images]
+        image_size = self.properties['size']*2*origin['extension']
+        self.field_image = pg.transform.scale(self.field_image, (image_size, image_size))
+        image_size = self.properties['size2']*2
+        self.ex_image = pg.transform.scale(self.ex_image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+            return
+        self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
+        if not self.consume_mp():
+            return
+        orientation = self.owner.orientation
+        entity = entities.MagicBullet(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
+        self.owner.controller.entities.add(entity)
+        field = fields.FireBall(entity, self.field_image, self.ex_image, self.properties)
+        self.owner.controller.fields.add(field)
+
+class Heal(Skill):
+    def __init__(self, owner, properties = None):
+        super().__init__(owner, properties)
+
+    def update_properties(self, properties):
+        origin = {'cd': 100, 'mp_consumption': 400, 'heal': 200}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+
+    def conduct(self, direction):
+        if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+            return
+        if any([effects.name == 'heal_cd' for effects in self.owner.effects]):
+            return
+        self.owner.effects.append(effects.countdown_effect('heal_cd', self.properties['cd']))
+        if not self.consume_mp():
+            return
+        self.owner.hp = min(self.owner.hp + self.properties['heal'], self.owner.max_hp)
+
+class Healing(Skill):
+    def __init__(self, owner, properties = None):
+        super().__init__(owner, properties)
+
+    def update_properties(self, properties):
+        origin = {'cd': 50, 'mp_consumption': 300, 'heal': 2, 'benefit_time': 100}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+
+    def conduct(self, direction):
+        if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
+            return
+        if any([effects.name == 'healing_cd' for effects in self.owner.effects]):
+            return
+        self.owner.effects.append(effects.countdown_effect('healing_cd', self.properties['cd']))
+        if not self.consume_mp():
+            return
+        self.owner.effect_extend(E.Healing(self.owner, self.properties))
+
 dictionary = {
     'Skill': Skill,
     'FastMove': FastMove,
@@ -252,10 +368,10 @@ dictionary = {
     'HeavyCut': HeavyCut,
     'FastLunge': FastLunge,
     'HeavyLunge': HeavyLunge,
-    'Missile': None,
-    'FireBall': None,
-    'Heal': None,
-    'Healing': None,
+    'Missile': Missile,
+    'FireBall': FireBall,
+    'Heal': Heal,
+    'Healing': Healing,
     'HelixCut': None,
     'Transposition': None
 }
