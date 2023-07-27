@@ -135,7 +135,7 @@ class HeavyCut(Skill):
         super().__init__(owner, properties, accept_keys)
 
     def update_properties(self, properties):
-        origin = {'size': 128, 'attack': 120, 'cd': 6, 'extension': 1, 'harmful_time': 10, 'base_cd': 12}
+        origin = {'size': 128, 'attack': 120, 'cd': 6, 'extension': 1, 'harmful_time': 10, 'base_cd': 16}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -153,29 +153,24 @@ class HeavyCut(Skill):
         self.owner.effects.append(effects.countdown_effect('sword_cd', self.properties['base_cd'] + self.properties['cd']))
         self.owner.effects.append(effects.countdown_effect('unstable', self.properties['base_cd'] + self.properties['harmful_time']))
         self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['base_cd']))
-        orientation = self.owner.orientation
         match direction:
             case 'up':
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.f_images, self.properties)
+                e = fields.Cut(self.owner, 0, self.f_images, self.properties)
             case 'left':
-                orientation += 90
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.f_images, self.properties)
+                e = fields.Cut(self.owner, 90, self.f_images, self.properties)
             case 'right':
-                orientation -= 90
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.f_images, self.properties)
+                e = fields.Cut(self.owner, -90, self.f_images, self.properties)
             case 'turn left':
-                orientation += 90
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.l_images, self.properties, side = True)
+                e = fields.Cut(self.owner, 90, self.l_images, self.properties, side = True)
             case 'turn right':
-                orientation -= 90
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.r_images, self.properties, side = True)
+                e = fields.Cut(self.owner, -90, self.r_images, self.properties, side = True)
             case _:
-                e = fields.Cut(self.owner, self.owner.loc.copy(), orientation, self.f_images, self.properties)
+                e = fields.Cut(self.owner, 0, self.f_images, self.properties)
         self.owner.controller.fields.add(e)
 
 class FastCut(HeavyCut):
     def update_properties(self, properties):
-        origin = {'size': 96, 'attack': 60, 'cd': 4, 'extension': 1, 'harmful_time': 4, 'base_cd': 7}
+        origin = {'size': 96, 'attack': 60, 'cd': 4, 'extension': 1, 'harmful_time': 4, 'base_cd': 8}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -184,3 +179,83 @@ class FastCut(HeavyCut):
         self.f_images = [pg.transform.scale(image, (image_size, image_size)) for image in self.f_images]
         self.r_images = [pg.transform.scale(image, (image_size, image_size)) for image in self.r_images]
         self.l_images = [self.r_images[0], pg.transform.flip(self.r_images[1], True, False), pg.transform.flip(self.r_images[2], True, False)]
+
+class HeavyLunge(Skill):
+    def __init__(self, owner, properties = None):
+        self.image1 = util.load_image_alpha('skills/lunge1.png')
+        self.image2 = util.load_image_alpha('skills/lunge2.png')
+
+        accept_keys = ['up', 'left', 'right', 'turn left', 'turn right']
+        super().__init__(owner, properties, accept_keys)
+
+    def update_properties(self, properties):
+        origin = {'size': 64, 'attack': 120, 'cd': 6, 'extension': 1, 'harmful_time': 10, 'base_cd': 16, 'dash': 64}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']
+        self.image1 = pg.transform.scale(self.image1, (image_size, 2*image_size))
+        self.image2 = pg.transform.scale(self.image2, (image_size, 2*image_size))
+        c_image = pg.Surface((image_size, 2*image_size), flags=pg.SRCALPHA)
+        c_image.fill((255,0,0,80))
+        f_image = pg.Surface((image_size, 2*image_size+2*self.properties['dash']), flags=pg.SRCALPHA)
+        f_image.fill((255,0,0,80), pg.Rect(0, 0, image_size, 2*image_size+self.properties['dash']))
+        self.f_images = [c_image, self.image1, self.image2, f_image]
+        self.c_images = [c_image, self.image1, self.image2]
+
+    def conduct(self, direction):
+        if any([effects.name == 'unstable' for effects in self.owner.effects]):
+            return
+        if any([effects.name == 'sword_cd' for effects in self.owner.effects]):
+            return
+        self.owner.effects.append(effects.countdown_effect('sword_cd', self.properties['base_cd'] + self.properties['cd']))
+        self.owner.effects.append(effects.countdown_effect('unstable', self.properties['base_cd'] + self.properties['harmful_time']))
+        self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['base_cd']-5))
+        match direction:
+            case 'up':
+                e = fields.Lunge(self.owner, 0, self.f_images, self.properties, dash = self.properties['dash'])
+            case 'left':
+                e = fields.Lunge(self.owner, 90, self.c_images, self.properties)
+            case 'right':
+                e = fields.Lunge(self.owner, -90, self.c_images, self.properties)
+            case 'turn left':
+                e = fields.Lunge(self.owner, 45, self.c_images, self.properties)
+            case 'turn right':
+                e = fields.Lunge(self.owner, -45, self.c_images, self.properties)
+            case _:
+                e = fields.Lunge(self.owner, 0, self.c_images, self.properties)
+        self.owner.controller.fields.add(e)
+
+class FastLunge(HeavyLunge):
+    def update_properties(self, properties):
+        origin = {'size': 64, 'attack': 60, 'cd': 4, 'extension': 1, 'harmful_time': 4, 'base_cd': 8, 'dash': 64}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']
+        self.image1 = pg.transform.scale(self.image1, (image_size, 2*image_size))
+        self.image2 = pg.transform.scale(self.image2, (image_size, 2*image_size))
+        c_image = pg.Surface((image_size, 2*image_size), flags=pg.SRCALPHA)
+        c_image.fill((255,0,0,80))
+        f_image = pg.Surface((image_size, 2*image_size+2*self.properties['dash']), flags=pg.SRCALPHA)
+        f_image.fill((255,0,0,80), pg.Rect(0, 0, image_size, 2*image_size+self.properties['dash']))
+        self.f_images = [c_image, self.image1, self.image2, f_image]
+        self.c_images = [c_image, self.image1, self.image2]
+
+dictionary = {
+    'Skill': Skill,
+    'FastMove': FastMove,
+    'MagicBullet': MagicBullet,
+    'FastCut': FastCut,
+    'HeavyCut': HeavyCut,
+    'FastLunge': FastLunge,
+    'HeavyLunge': HeavyLunge,
+    'Missile': None,
+    'FireBall': None,
+    'Heal': None,
+    'Healing': None,
+    'HelixCut': None,
+    'Transposition': None
+}

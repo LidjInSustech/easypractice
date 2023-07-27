@@ -2,7 +2,7 @@ import pygame as pg
 import visibles
 import equipments
 import util
-from pages.skill_setting import dictionary
+from skills.skills import dictionary
 
 class Player(visibles.Movable):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, image = None, radius = None):

@@ -11,10 +11,11 @@ class Field(visibles.Visible):
         return False
 
 class AccessoryField(Field):
-    def __init__(self, owner, drift = None, image = None, rotate_image = True):
+    def __init__(self, owner, drift = None, orient_drift = 0, image = None, rotate_image = True):
         super().__init__(owner.controller, owner.loc, owner.orientation, owner.faction, image, rotate_image)
         self.owner = owner
         self.drift = drift
+        self.orient_drift = orient_drift
 
     def update(self):
         if not self.owner.alive:
@@ -30,7 +31,7 @@ class AccessoryField(Field):
                 self.loc = self.owner.loc + self.drift
         else:
             self.loc = self.owner.loc
-        self.orientation = self.owner.orientation
+        self.orientation = self.owner.orientation + self.orient_drift
 
 class FastMove(Field):
     def __init__(self, owner, orientation, image, life_time = 4):
@@ -61,8 +62,8 @@ class MagicBullet(AccessoryField):
     def touch(self, entity):
         return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
 
-class Cut(Field):
-    def __init__(self, owner, loc, orientation, images, properties = None, side = False):
+class Cut(AccessoryField):
+    def __init__(self, owner, orient_drift, images, properties = None, side = False):
         self.properties = properties
         self.side = side
         self.radius = properties.get('size', 128)*properties.get('extension', 1)
@@ -71,7 +72,7 @@ class Cut(Field):
         self.life = max(self.life, 5)
         self.images = images
         self.owner = owner
-        super().__init__(owner.controller, loc = loc, orientation = orientation, faction = owner.faction, image = images[0], rotate_image = True)
+        super().__init__(owner, drift = None, orient_drift = orient_drift, image = images[0], rotate_image = True)
         super().update()
 
     def update(self):
@@ -106,4 +107,47 @@ class Cut(Field):
             if vector.length_squared() <= (entity.radius + self.radius)**2:
                 r, phi = vector.as_polar()
                 if (phi - self.orientation)%360 < angles[0] or (phi - self.orientation)%360 > angles[1]:
+                    entity.damage(self.attack)
+
+class Lunge(AccessoryField):
+    def __init__(self, owner, orient_drift, images, properties = None, dash = 0):
+        self.properties = properties
+        self.dash = dash
+        self.radius = properties.get('size', 64)*properties.get('extension', 1)
+        self.attack = properties.get('attack', 100)
+        self.life = properties.get('base_cd', 10)
+        self.life = max(self.life, 5)
+        self.images = images
+        self.owner = owner
+        image = images[0] if dash == 0 else images[3]
+        super().__init__(owner, drift = pg.Vector2.from_polar((self.radius, orient_drift)), orient_drift = orient_drift, image = image, rotate_image = True)
+        super().update()
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+        elif self.life == 4:
+            self.origional_image = self.images[0].copy()
+            self.origional_image.blit(self.images[1], (0,0))
+            super().update()
+        elif self.life == 2:
+            self.origional_image = self.images[0].copy()
+            self.origional_image.blit(self.images[2], (0,0))
+            
+            if self.dash != 0:
+                self.owner.move(relative_direction = self.orient_drift, distance = self.dash)
+            super().update()
+
+            for entities in self.controller.entities:
+                if entities.faction != self.faction:
+                    if self.touch(entities):
+                        entities.damage(self.attack)
+
+    def touch(self, entity):
+        if entity.faction != self.faction:
+            base = pg.math.Vector2.from_polar((1, self.orientation))
+            vector = entity.loc - self.loc
+            if abs(base.cross(vector)) < self.radius/2 + entity.radius:
+                if abs(base.dot(vector)) < self.radius + entity.radius:
                     entity.damage(self.attack)

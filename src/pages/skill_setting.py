@@ -2,23 +2,9 @@ import pygame as pg
 import util
 import skills.skills as skills
 
-dictionary = {
-    'Skill': skills.Skill,
-    'FastMove': skills.FastMove,
-    'MagicBullet': skills.MagicBullet,
-    'FastCut': None,
-    'HeavyCut': None,
-    'Missile': None,
-    'FireBall': None,
-    'Heal': None,
-    'Healing': None,
-    'HelixCut': None,
-    'Transposition': None
-}
-
 class Page(util.Rolling_Box):
     def __init__(self):
-        global dictionary
+        dictionary = skills.dictionary
         skill_names = list(dictionary.keys())
         self.skill_names = skill_names
         self.load_description()
@@ -27,7 +13,7 @@ class Page(util.Rolling_Box):
         self.plane = infomation_plane(pg.Rect(rect.width*0.4, rect.height*0.05, rect.width*0.5, rect.height*0.9))
         rect.width = rect.width//3
         button_rect = pg.Rect(0, 0, rect.width, rect.height*0.18)
-        super().__init__(rect, button_rect, [self.description[i]['name'] for i in skill_names], util.load_image('basic/loading_page.png'))
+        super().__init__(rect, button_rect, [self.description.get(i, {'name':i})['name'] for i in skill_names], util.load_image('basic/loading_page.png'))
 
     def start(self):
         rect = pg.display.get_surface().get_rect()
@@ -39,17 +25,18 @@ class Page(util.Rolling_Box):
                 index = util.Button_Box(pg.Rect(rect.w/3, 0, rect.w/3, rect.h), ['1', '2', '3', '4', '5', '6'], self.picture)
                 index = index.start()
                 if index >= 0:
-                    self.player['primary weapon' if weapon == 1 else 'sub weapon']['skills'][index] = self.skill_names[self.curser]
+                    self.player['primary weapon' if weapon == 0 else 'sub weapon']['skills'][index] = self.skill_names[self.curser]
                     self.save_player()
             message = super().start()
 
     def draw(self):
         super().draw()
-        name = self.description[self.skill_names[self.curser]]['name']
-        icon = pg.Surface((64, 64))
-        desc = self.description[self.skill_names[self.curser]]['desc']
-        playerinfo = self.get_player_info(self.player, self.skill_names[self.curser])
-        self.plane.draw(name, icon, desc, playerinfo)
+        if self.skill_names[self.curser] in self.description:
+            name = self.description[self.skill_names[self.curser]]['name']
+            icon = pg.Surface((64, 64))
+            desc = self.description[self.skill_names[self.curser]]['desc']
+            playerinfo = self.get_player_info(self.player, self.skill_names[self.curser])
+            self.plane.draw(name, icon, desc, playerinfo)
         pg.display.flip()
 
     def load_description(self):
@@ -78,9 +65,9 @@ class Page(util.Rolling_Box):
                 text2.append(str(i+1))
         text = ['']
         if len(text1) > 0:
-            text.append('Primary Weapon: ' + ', '.join(text1))
+            text.append(util.get_word('primary weapon') + ': ' + ', '.join(text1))
         if len(text2) > 0:
-            text.append('Sub Weapon: ' + ', '.join(text2))
+            text.append(util.get_word('sub weapon') + ': ' + ', '.join(text2))
         return text
 
 class infomation_plane():
