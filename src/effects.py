@@ -36,3 +36,15 @@ class icon_countdown_effect(icon_effect):
     def update(self):
         self.life -= 1
         return self.life > 0
+
+class delay_action(countdown_effect):
+    def __init__(self, life, action):
+        super().__init__('delay_action', life)
+        self.action = action
+
+    def update(self):
+        if super().update():
+            return True
+        else:
+            self.action()
+            return False

@@ -92,11 +92,12 @@ class MagicBullet(Skill):
         field_image.set_colorkey((0,0,0))
         field_image.set_alpha(80)
         self.field_image = field_image
-        super().__init__(owner, properties)
+        accept_keys = ['up', 'left', 'right', 'down']
+        super().__init__(owner, properties, accept_keys = accept_keys)
 
     def update_properties(self, properties):
-        origin = {'max_hp': 100, 'max_mp': 1, 'mp_regen': 0, 'speed': 5, 'size': 8,
-         'life': 150, 'attack': 60, 'extension': 1.1, 'mp_consumption': 50, 'after': 12}
+        origin = {'max_hp': 100, 'max_mp': 1, 'mp_regen': 0, 'speed': 5, 'size': 8, 'knockback': 8,
+         'life': 150, 'attack': 60, 'extension': 1.1, 'mp_consumption': 50, 'before': 8, 'duration': 8, 'after': 12}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -109,14 +110,42 @@ class MagicBullet(Skill):
     def conduct(self, direction):
         if any([effects.name == 'busy' for effects in self.owner.effects]):
             return
-        self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
-        if not self.consume_mp():
-            return
-        orientation = self.owner.orientation
+        if direction in ('up', 'down'):
+            if self.consume_mp(self.properties['mp_consumption']*3):
+                # begin to cast
+                if direction == 'up':
+                    self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+                    for i in [-30, 0, 30]:
+                        orientation = i + self.owner.orientation
+                        self.post(orientation)
+                    return
+                else:
+                    self.owner.effects.append(effects.countdown_effect('busy',
+                     self.properties['before'] + self.properties['duration'] + self.properties['after']))
+                    self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['before'] + self.properties['duration']))
+                    for i in range(3):
+                        time = self.properties['before'] + self.properties['duration']*i/2
+                        self.owner.effects.append(effects.delay_action(time, lambda :self.post(self.owner.orientation)))
+        elif self.consume_mp():
+            # begin to cast
+            match direction:
+                case 'left':
+                    orientation = 90
+                case 'right':
+                    orientation = -90
+                case _:
+                    orientation = 0
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            orientation += self.owner.orientation
+            self.post(orientation)
+    
+    def post(self, orientation):
         entity = entities.MagicBullet(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
         self.owner.controller.entities.add(entity)
+        entity.handle_image()
         field = fields.MagicBullet(entity, self.field_image, self.properties)
         self.owner.controller.fields.add(field)
+        field.handle_image()
         
 class HeavyCut(Skill):
     def __init__(self, owner, properties = None):

@@ -20,7 +20,8 @@ class Visible(pg.sprite.Sprite):
         self.draw_pos += self.camera.center
         self.draw_orient = self.orientation - self.camera.orientation
 
-    def handle_image(self, source_image):
+    def handle_image(self):
+        source_image = self.origional_image
         self.calculate_position()
         if self.rotate_image:
             self.image = pg.transform.rotate(source_image, self.draw_orient)
@@ -29,7 +30,7 @@ class Visible(pg.sprite.Sprite):
         self.rect = self.image.get_rect(center=self.draw_pos)
 
     def update(self):
-        self.handle_image(self.origional_image)
+        self.handle_image()
         super().update()
 
 class Accessory(Visible):

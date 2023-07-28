@@ -50,6 +50,7 @@ class MagicBullet(AccessoryField):
         self.properties = properties
         self.radius = properties.get('size', 32)*properties.get('extension', 1.1)
         self.attack = properties.get('attack', 100)
+        self.knockback = properties.get('knockback', 0)
         super().__init__(owner, drift = pg.math.Vector2(2*properties.get('extension', 1.1), 0), image = image)
 
     def update(self):
@@ -57,6 +58,7 @@ class MagicBullet(AccessoryField):
         for e in self.controller.entities:
             if self.touch(e):
                 e.damage(self.attack)
+                e.passive_move(direction = self.orientation, distance = self.knockback)
                 self.owner.kill()
                 self.kill()
 
@@ -232,7 +234,7 @@ class Laser(Field):
         self.attack = properties.get('attack', 100)
         self.representation = pg.math.Vector2.from_polar((1, owner.orientation + orient_drift))
         self.length = self.get_length()
-        self.handle_image('red')
+        self.handle_image()
         self.life = 6
 
     def update(self):
@@ -250,7 +252,8 @@ class Laser(Field):
         self.length = self.get_length()
         super().update()
 
-    def handle_image(self, source_image):
+    def handle_image(self):
+        source_image = self.origional_image
         length = self.length
         self.calculate_position()
         draw_orient = self.draw_orient
@@ -316,4 +319,5 @@ class Laser(Field):
             y_length = self.controller.boundary.y - loc.y
         elif representation.y < 0:
             y_length = self.controller.boundary.y + loc.y
-        return min(x_length/abs(representation.x), y_length/abs(representation.y))
+        eps = 1e-6
+        return min(x_length/(abs(representation.x)+eps), y_length/(abs(representation.y)+eps))

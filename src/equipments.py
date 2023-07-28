@@ -37,7 +37,7 @@ def get_weapon(name):
     try:
         return equipment(name, load()['weapons'][name])
     except KeyError:
-        return None
+        return equipment('empty', load()['weapons']['empty'])
 
 def get_equipment(name):
     try:

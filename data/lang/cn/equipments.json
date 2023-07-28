@@ -1,8 +1,16 @@
 {
     "weapons": {
-        "sword": {
-            "name": "剑",
-            "desc": "普通的剑"
+        "empty": {
+            "name": "空手",
+            "desc": "空手"
+        },
+        "wood sword": {
+            "name": "木剑",
+            "desc": "普通的木剑"
+        },
+        "iron sword": {
+            "name": "铁剑",
+            "desc": "普通的铁剑"
         },
         "wand": {
             "name": "魔杖",

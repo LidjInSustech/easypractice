@@ -198,6 +198,7 @@ class Rolling_Box(Button_Box):
         self.load_buttons(button_names)
         self.picture = picture
         self.offset = (self.rolling_rect.height - self.rect.height) / (len(self.buttons) - 1)
+        self.scrollbar_len = self.rect.height * self.rect.height / self.rolling_rect.height
 
     def load_buttons(self, button_names):
         self.up_image = load_image_alpha('basic/button_up.png', self.button_rect)
@@ -215,8 +216,8 @@ class Rolling_Box(Button_Box):
         rolling_area.blit(self.buttons[self.curser].down, (0, self.margin + self.curser*(self.margin+self.button_rect.h)))
         for i in range(self.curser+1, len(self.buttons)):
             rolling_area.blit(self.buttons[i].up, (0, self.margin + i*(self.margin+self.button_rect.h)))
-        start_pos = (self.rolling_rect.w, self.curser*(self.margin+self.button_rect.h))
-        end_pos = (self.rolling_rect.w, start_pos[1] + self.margin*2 + self.button_rect.h)
+        start_pos = (self.rolling_rect.w, self.offset*self.curser + (self.rect.h - self.scrollbar_len) * self.curser / (len(self.buttons) - 1))
+        end_pos = (self.rolling_rect.w, start_pos[1] + self.scrollbar_len)
         pg.draw.line(rolling_area, (251,254,110), start_pos, end_pos, self.margin)
         
         self.screen.blit(rolling_area, self.rect, area=pg.Rect(0, self.offset*self.curser, self.rect.w, self.rect.h))

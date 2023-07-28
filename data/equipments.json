@@ -1,15 +1,25 @@
 {
     "weapons": {
-        "sword": [
-                ["attack", "plus", 5],
-                ["defense", "plus", 2]
+        "empty": [
+                ["attack", "plus", 10]
+        ],
+        "wood sword": [
+                ["attack", "plus", 20],
+                ["defense", "plus", 5],
+                ["sharp", "plus", 1]
+        ],
+        "iron sword": [
+                ["attack", "plus", 30],
+                ["defense", "plus", 10],
+                ["sharp", "plus", 2]
         ],
         "wand": [
-                ["attack", "plus", 3],
-                ["defense", "plus", 1]
+                ["attack", "plus", 20],
+                ["defense", "plus", 5],
+                ["x_cd", "plus", -0.2]
         ],
         "shield": [
-                ["defense", "proportion", 1]
+                ["defense", "plus", 50]
         ]
     },
     "equipments": {
