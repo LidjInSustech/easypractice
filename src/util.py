@@ -6,6 +6,7 @@ import pygame.freetype as ftype
 config = None
 trans_table = None
 loading_image = None
+font = None
 
 def init():
     global config, trans_table
@@ -43,10 +44,14 @@ def write_config(filename, config):
     return config
 
 def get_font(size):
-    try:
-        return ftype.SysFont(config['font_style'], int(size*config['font_size']))
-    except:
-        return ftype.SysFont(None, size)
+    global font
+    if font is None:
+        try:
+            font = ftype.SysFont(config['font_style'], int(size*config['font_size']))
+        except:
+            font = ftype.SysFont(None, size)
+    font.size = size
+    return font
 
 def load_image(filename, rect = None, colorkey = None):
     filename = os.path.join('res', filename)

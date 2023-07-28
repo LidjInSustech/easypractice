@@ -55,7 +55,25 @@ class Accessory(Visible):
         super().calculate_position()
         if self.drift is not None and not self.rotate_image:
             self.draw_pos += self.drift
-        
+
+class DamageMark(Accessory):
+    def __init__(self, owner, value):
+        text = str(-round(value))
+        font = util.get_font(18)
+        image, rect = font.render(text, fgcolor = (55, 55, 55), style = pg.freetype.STYLE_STRONG)
+        font.render_to(image, (0, 0), text, fgcolor = (255, 0, 0))
+        drift = pg.math.Vector2(16, -16)
+        super().__init__(owner, drift = drift, image = image, rotate_image = False)
+        self.value = value
+        self.life = 20
+
+    def update(self):
+        self.life -= 1
+        self.drift += pg.math.Vector2(1, -1)
+        if self.life <= 0:
+            self.kill()
+        super().update()
+
 class Entity(Visible):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = True, properties = None):
         self.controller = controller
@@ -119,13 +137,33 @@ class Entity(Visible):
         value -= self.properties.get('armor', 0)
         if value > 0:
             self.hp -= value
+            self.controller.acessories.add(DamageMark(self, value))
 
     def effect_extend(self, effect):
         for e in self.effects:
             if e.name == effect.name:
                 e.life += effect.life
                 return
-        self.effects.append(effect)    
+        self.effects.append(effect)
+
+    def passive_move(self, direction, distance):
+        collision = []
+        for entity in self.controller.entities:
+            if entity.faction != self.faction and entity.colliding(self):
+                collision.append(entity)
+        self.attampt_move(collision, direction, distance)
+        
+    def colliding(self, other):
+        return self.loc.distance_squared_to(other.loc) < (self.radius + other.radius)**2
+    
+    def attampt_move(self, collisions, direction, distance):
+        move_vector = pg.math.Vector2.from_polar((distance, direction))
+        self.loc += move_vector
+        for entity in self.controller.entities:
+            if entity.faction != self.faction and entity.colliding(self) and entity not in collisions:
+                self.loc -= move_vector
+                if distance > 2:
+                    self.attampt_move(collisions, direction, distance/2)
 
 class Movable(Entity):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):
@@ -136,20 +174,11 @@ class Movable(Entity):
             return
         if distance is None:
             distance = self.speed
-        collision = []
-        for entity in self.controller.entities:
-            if entity.faction != self.faction and entity.colliding(self):
-                collision.append(entity)
-        self.attampt_move(collision, relative_direction, distance)
-        
-    def colliding(self, other):
-        return self.loc.distance_squared_to(other.loc) < (self.radius + other.radius)**2
-    
-    def attampt_move(self, collisions, relative_direction, distance):
-        move_vector = pg.math.Vector2.from_polar((distance, self.orientation + relative_direction))
-        self.loc += move_vector
-        for entity in self.controller.entities:
-            if entity.faction != self.faction and entity.colliding(self) and entity not in collisions:
-                self.loc -= move_vector
-                if distance > 2:
-                    self.attampt_move(collisions, relative_direction, distance/2)
+        self.passive_move(self.orientation + relative_direction, distance)
+
+class Stationary(Entity):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):
+        super().__init__(controller, loc, orientation, faction, image, radius, rotate_image, properties)
+
+    def passive_move(self, direction, distance):
+        pass

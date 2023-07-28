@@ -71,7 +71,7 @@ class Cut(AccessoryField):
         self.side = side
         self.radius = properties.get('size', 128)*properties.get('extension', 1)
         self.attack = properties.get('attack', 100)
-        self.life = properties.get('base_cd', 10)
+        self.life = properties.get('duration', 5) + properties.get('before', 0)
         self.life = max(self.life, 5)
         self.images = images
         self.owner = owner
@@ -118,7 +118,7 @@ class Lunge(AccessoryField):
         self.dash = dash
         self.radius = properties.get('size', 64)*properties.get('extension', 1)
         self.attack = properties.get('attack', 100)
-        self.life = properties.get('base_cd', 10)
+        self.life = properties.get('before', 0) + properties.get('duration', 5)
         self.life = max(self.life, 5)
         self.images = images
         self.owner = owner
@@ -139,7 +139,7 @@ class Lunge(AccessoryField):
             self.origional_image.blit(self.images[2], (0,0))
             
             if self.dash != 0:
-                self.owner.move(relative_direction = self.orient_drift, distance = self.dash)
+                self.owner.passive_move(direction = self.orientation, distance = self.dash)
             super().update()
 
             for entities in self.controller.entities:

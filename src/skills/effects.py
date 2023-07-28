@@ -27,6 +27,5 @@ class HelixCut(E.effect):
         self.count -= 1
         if self.count == 0:
             self.count = 4
-            self.owner.effect_extend(E.countdown_effect('unstable', life = 4))
-            self.owner.effect_extend(E.countdown_effect('sword_cd', life = 4))
+            self.owner.effect_extend(E.countdown_effect('busy', life = 4))
         return True
