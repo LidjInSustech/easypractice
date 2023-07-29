@@ -28,14 +28,10 @@ class icon_effect(effect):
         super().__init__(name)
         self.image = image
 
-class icon_countdown_effect(icon_effect):
-    def __init__(self, name, image, life):
-        super().__init__(name, image)
-        self.life = life
-
-    def update(self):
-        self.life -= 1
-        return self.life > 0
+class icon_countdown_effect(countdown_effect, icon_effect):
+    def __init__(self, name, life, image):
+        countdown_effect.__init__(self, name, life)
+        icon_effect.__init__(self, name, image)
 
 class delay_action(countdown_effect):
     def __init__(self, life, action):

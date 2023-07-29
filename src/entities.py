@@ -2,6 +2,7 @@ import pygame as pg
 import visibles
 import equipments
 import util
+import automixin
 from skills.skills import dictionary
 
 class Player(visibles.Movable):
@@ -33,3 +34,12 @@ class Player(visibles.Movable):
         for skill in self.weapon.skills:
             skill.update_properties(self.properties)
         
+class RandomWalk(visibles.Movable, automixin.Patrol):
+    def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, image = None, radius = None):
+        super().__init__(controller, loc = loc, orientation = orientation, faction = 2,
+         image = image, radius = radius, rotate_image = False)
+        self.set_path([pg.math.Vector2(100, 0), pg.math.Vector2(-100, 0)])
+
+    def update(self):
+        self.free()
+        super().update()

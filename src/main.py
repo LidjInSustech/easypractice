@@ -15,8 +15,9 @@ def load_game():
     player.skills = [skills.skills.FastMove(player), skills.skills.MagicBullet(player)]
     ctrler.load_player(player)
     ctrler.load_floor(util.load_image('floor/bigBackground.png',(1024,1024), (0,0,0)))
-    entity = visibles.Movable(ctrler, pg.math.Vector2(100, 0), 0, 2, util.load_image_alpha('entities/human1.png',(64,64)))
-    ctrler.load_entity(entity)
+    #entity = visibles.Stationary(ctrler, pg.math.Vector2(100, 0), 0, 2, util.load_image_alpha('entities/stone.png',(64,96)), rotate_image=False)
+    entity = entities.RandomWalk(ctrler, pg.math.Vector2(100, 0), 0, util.load_image_alpha('entities/human1.png',(64,64)))
+    ctrler.load_directing(entity)
     ctrler.start()
 
 def get_size():

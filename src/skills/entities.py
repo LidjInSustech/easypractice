@@ -54,4 +54,39 @@ class Missile(Fliping):
                         else:
                             self.orientation += self.properties['turn']
 
-                    
+class Billiard(MagicBullet):
+    def update(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.kill()
+        self.bounce()
+        self.move()
+        super().update()
+
+    def bounce(self):
+        if abs(self.loc.x) >= self.controller.boundary.x:
+            self.orientation = 180 - self.orientation
+        if abs(self.loc.y) >= self.controller.boundary.y:
+            self.orientation = -self.orientation
+
+    def bounce_(self, entity):
+        vector = entity.loc - self.loc
+        polar = vector.as_polar()[1] + 90
+        self.orientation = (2*polar - self.orientation)%360
+
+class Bubble(visibles.Movable):
+    def __init__(self, owner, orientation = 0, image = None, properties = None):
+        self.life = properties.get('life', 100)
+        self.radius = properties.get('size', 32)
+        super().__init__(owner.controller, loc = owner.loc.copy(), orientation = orientation, faction = owner.faction,
+         image = image, radius = self.radius, rotate_image = False, properties = properties.copy())
+
+    def update(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.kill()
+        if self.life%4 == 0:
+            if self.properties['speed'] > 0:
+                self.properties['speed'] -= 1
+        self.move()
+        super().update()

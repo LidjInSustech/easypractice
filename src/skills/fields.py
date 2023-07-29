@@ -118,14 +118,15 @@ class Lunge(AccessoryField):
     def __init__(self, owner, orient_drift, images, properties = None, dash = 0):
         self.properties = properties
         self.dash = dash
-        self.radius = properties.get('size', 64)*properties.get('extension', 1)
+        self.length = properties.get('length', 64)*properties.get('extension', 1)
+        self.width = properties.get('width', 32)*properties.get('extension', 1)
         self.attack = properties.get('attack', 100)
         self.life = properties.get('before', 0) + properties.get('duration', 5)
         self.life = max(self.life, 5)
         self.images = images
         self.owner = owner
         image = images[0] if dash == 0 else images[3]
-        super().__init__(owner, drift = pg.Vector2.from_polar((self.radius, orient_drift)), orient_drift = orient_drift, image = image, rotate_image = True)
+        super().__init__(owner, drift = pg.Vector2.from_polar((self.length, orient_drift)), orient_drift = orient_drift, image = image, rotate_image = True)
         super().update()
 
     def update(self):
@@ -152,8 +153,8 @@ class Lunge(AccessoryField):
         if entity.faction != self.faction:
             base = pg.math.Vector2.from_polar((1, self.orientation))
             vector = entity.loc - self.loc
-            if abs(base.cross(vector)) < self.radius/2 + entity.radius:
-                if abs(base.dot(vector)) < self.radius + entity.radius:
+            if abs(base.cross(vector)) < self.width + entity.radius:
+                if abs(base.dot(vector)) < self.length + entity.radius:
                     return True
         return False
 
@@ -230,17 +231,19 @@ class Laser(Field):
         super().__init__(owner.controller, loc = owner.loc, orientation = owner.orientation + orient_drift, faction = owner.faction, image = 'red')
         self.owner = owner
         self.properties = properties
-        self.width = properties.get('size', 2)*properties.get('extension', 1)
+        self.width = properties.get('width', 2)*properties.get('extension', 1)
         self.attack = properties.get('attack', 100)
+        self.life = properties.get('duration', 3)
+        self.life = max(self.life, 3)
         self.representation = pg.math.Vector2.from_polar((1, owner.orientation + orient_drift))
         self.length = self.get_length()
         self.handle_image()
-        self.life = 6
 
     def update(self):
         self.life -= 1
         if self.life < 0:
             self.kill()
+            return
         elif self.life > 2:
             return
         elif self.life == 2:
@@ -321,3 +324,51 @@ class Laser(Field):
             y_length = self.controller.boundary.y + loc.y
         eps = 1e-6
         return min(x_length/(abs(representation.x)+eps), y_length/(abs(representation.y)+eps))
+
+class PenetrantLaser(AccessoryField):
+    def __init__(self, owner, drift, orient_drift, images, properties = None):
+        self.owner = owner
+        self.properties = properties
+        self.width = properties.get('width', 2)*properties.get('extension', 1)
+        self.length = properties.get('length', 64)*properties.get('extension', 1)
+        self.attack = properties.get('attack', 100)
+        self.life = properties.get('duration', 4)
+        self.life = max(self.life, 4)
+        self.images = images
+        self.representation = pg.math.Vector2.from_polar((1, owner.orientation + orient_drift))
+        super().__init__(owner, drift = drift, orient_drift = orient_drift, image = images[0])
+        self.handle_image()
+
+    def update(self):
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+        elif self.life == 2:
+            self.origional_image = self.images[1]
+            for e in self.controller.entities:
+                if self.touch(e):
+                    e.damage(self.attack)
+        super().update()
+
+    def touch(self, entity):
+        if entity.faction != self.faction:
+            base = self.representation
+            vector = entity.loc - self.loc
+            if abs(base.cross(vector)) < self.width + entity.radius:
+                dot = base.dot(vector)
+                if dot < self.length and dot > -self.length:
+                    return True
+        return False
+
+class Billiard(MagicBullet):
+    def update(self):
+        self.drift = pg.math.Vector2(2*self.properties.get('extension', 1.1), 0)
+        super().update()
+
+    def update(self):
+        AccessoryField.update(self)
+        for e in self.controller.entities:
+            if self.touch(e):
+                e.damage(self.attack)
+                e.passive_move(direction = self.orientation, distance = self.knockback)
+                self.owner.bounce_(e)

@@ -216,18 +216,21 @@ class HeavyLunge(Skill):
         super().__init__(owner, properties, accept_keys)
 
     def update_properties(self, properties):
-        origin = {'size': 64, 'attack': 120, 'extension': 1, 'before': 11, 'duration': 5, 'after': 4, 'dash': 64}
+        origin = {'length': 64, 'width':32, 'attack': 120, 'extension': 1, 'before': 11, 'duration': 5, 'after': 4, 'dash': 64}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
+        origin['length'] = properties.get('x_size', 1)*origin['length']
+        origin['width'] = properties.get('x_size', 1)*origin['width']
         self.properties = origin
-        image_size = self.properties['size']
-        self.image1 = pg.transform.scale(self.image1, (image_size, 2*image_size))
-        self.image2 = pg.transform.scale(self.image2, (image_size, 2*image_size))
-        c_image = pg.Surface((image_size, 2*image_size), flags=pg.SRCALPHA)
+        length = self.properties['length']
+        width = self.properties['width']
+        self.image1 = pg.transform.scale(self.image1, (2*width, 2*length))
+        self.image2 = pg.transform.scale(self.image2, (2*width, 2*length))
+        c_image = pg.Surface((2*width, 2*length), flags=pg.SRCALPHA)
         c_image.fill((255,0,0,80))
-        f_image = pg.Surface((image_size, 2*image_size+2*self.properties['dash']), flags=pg.SRCALPHA)
-        f_image.fill((255,0,0,80), pg.Rect(0, 0, image_size, 2*image_size+self.properties['dash']))
+        f_image = pg.Surface((2*width, 2*length+2*self.properties['dash']), flags=pg.SRCALPHA)
+        f_image.fill((255,0,0,80), pg.Rect(0, 0, 2*width, 2*length+self.properties['dash']))
         self.f_images = [c_image, self.image1, self.image2, f_image]
         self.c_images = [c_image, self.image1, self.image2]
 
@@ -253,18 +256,21 @@ class HeavyLunge(Skill):
 
 class FastLunge(HeavyLunge):
     def update_properties(self, properties):
-        origin = {'size': 48, 'attack': 60, 'cd': 4, 'extension': 1, 'before': 1, 'duration': 5, 'after': 6, 'dash': 64}
+        origin = {'length': 48, 'width': 24, 'attack': 60, 'cd': 4, 'extension': 1, 'before': 1, 'duration': 5, 'after': 6, 'dash': 64}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
+        origin['length'] = properties.get('x_size', 1)*origin['length']
+        origin['width'] = properties.get('x_size', 1)*origin['width']
         self.properties = origin
-        image_size = self.properties['size']
-        self.image1 = pg.transform.scale(self.image1, (image_size, 2*image_size))
-        self.image2 = pg.transform.scale(self.image2, (image_size, 2*image_size))
-        c_image = pg.Surface((image_size, 2*image_size), flags=pg.SRCALPHA)
+        length = self.properties['length']
+        width = self.properties['width']
+        self.image1 = pg.transform.scale(self.image1, (2*width, 2*length))
+        self.image2 = pg.transform.scale(self.image2, (2*width, 2*length))
+        c_image = pg.Surface((2*width, 2*length), flags=pg.SRCALPHA)
         c_image.fill((255,0,0,80))
-        f_image = pg.Surface((image_size, 2*image_size+2*self.properties['dash']), flags=pg.SRCALPHA)
-        f_image.fill((255,0,0,80), pg.Rect(0, 0, image_size, 2*image_size+self.properties['dash']))
+        f_image = pg.Surface((2*width, 2*length+2*self.properties['dash']), flags=pg.SRCALPHA)
+        f_image.fill((255,0,0,80), pg.Rect(0, 0, 2*width, 2*length+self.properties['dash']))
         self.f_images = [c_image, self.image1, self.image2, f_image]
         self.c_images = [c_image, self.image1, self.image2]
 
@@ -474,25 +480,117 @@ class Transposition(Skill):
                 self.owner.loc = self.mark.loc.copy()
                 self.owner.orientation = self.mark.orientation
             
-class Laser(Skill):# uncompleted
+class Laser(Skill):# unrecommended
     def __init__(self, owner, properties = None):
         super().__init__(owner, properties, accept_keys = None)
 
     def update_properties(self, properties):
-        origin = {'mp_consumption': 100, 'cd': 6, 'attack': 100, 'size': 3}
+        origin = {'mp_consumption': 100, 'attack': 100, 'width': 3, 'duration':6, 'after': 12}
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
         self.properties = origin
 
     def conduct(self, direction):
-        #if any([effects.name == 'spell_cd' for effects in self.owner.effects]):
-        #    return
-        #self.owner.effects.append(effects.countdown_effect('spell_cd', self.properties['cd']))
-        #if not self.consume_mp():
-        #    return
-        #orientation = self.owner.orientation
-        field = fields.Laser(self.owner, 0, self.properties)
-        self.owner.controller.fields.add(field)
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if self.consume_mp():
+            # begin to cast
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['duration'] + self.properties['after']))
+            self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['duration']))
+            field = fields.Laser(self.owner, 0, self.properties)
+            self.owner.controller.fields.add(field)
+
+class PenetrantLaser(Skill):
+    def __init__(self, owner, properties = None):
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'mp_consumption': 100, 'attack': 100, 'length': 32, 'width': 4, 'duration':6, 'after': 12}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        length = self.properties['length']
+        width = self.properties['width']
+        image0 = pg.Surface((2*width, 2*length))
+        image0.fill((255,0,0))
+        image0.set_alpha(80)
+        image1 = pg.Surface((2*width, 2*length))
+        image1.fill((255,255,255))
+        self.images = [image0, image1]
+
+    def conduct(self, direction):
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if self.consume_mp():
+            # begin to cast
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['duration'] + self.properties['after']))
+            self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['duration']))
+            length = self.properties['length']
+            for i in range(8):
+                field = fields.PenetrantLaser(self.owner, pg.math.Vector2(length*(2*i+1), 0), 0, self.images, self.properties)
+                self.owner.controller.fields.add(field)
+
+class Billiard(Skill):
+    def __init__(self, owner, properties = None):
+        image1 = util.load_image_alpha('skills/billiard1.png')
+        image2 = util.load_image_alpha('skills/billiard2.png')
+        image3 = util.load_image_alpha('skills/billiard3.png')
+        self.images = [image1, image2, image3]
+        field_image = pg.Surface((32, 32))
+        pg.draw.circle(field_image, (255,0,0), (16, 16), 16)
+        field_image.set_colorkey((0,0,0))
+        field_image.set_alpha(80)
+        self.field_image = field_image
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'max_hp': 50, 'max_mp': 1, 'mp_regen': 0, 'speed': 5, 'size': 16,
+         'life': 1000, 'attack': 50, 'extension': 1.1, 'mp_consumption': 50, 'after': 12}
+        origin['attack'] = properties.get('attack', 100)*origin['attack']/100
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*2
+        self.images = [pg.transform.scale(image, (image_size, image_size)) for image in self.images]
+        image_size = self.properties['size']*2*origin['extension']
+        self.field_image = pg.transform.scale(self.field_image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if self.consume_mp():
+            # begin to cast
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            orientation = self.owner.orientation
+            entity = entities.Billiard(self.owner, self.images, self.owner.loc.copy(), orientation, self.properties)
+            self.owner.controller.entities.add(entity)
+            field = fields.Billiard(entity, self.field_image, self.properties)
+            self.owner.controller.fields.add(field)
+
+class Bubble(Skill):
+    def __init__(self, owner, properties = None):
+        self.image = util.load_image_alpha('skills/bubble.png')
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'max_hp': 1, 'max_mp': 1, 'mp_regen': 0, 'speed': 8, 'size': 32,
+         'life': 200, 'mp_consumption': 10, 'after': 12}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*2
+        self.image = pg.transform.scale(self.image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if self.consume_mp():
+            # begin to cast
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            orientation = self.owner.orientation
+            entity = entities.Bubble(self.owner, orientation, self.image, self.properties)
+            self.owner.controller.entities.add(entity)
+
 
 
 dictionary = {
@@ -509,7 +607,12 @@ dictionary = {
     'Healing': Healing,
     'HelixCut': HelixCut,
     'Transposition': Transposition,
-    'ToxicBall': None,
     'Laser': Laser,
-    'StoneColumn': None
+    'PenetrantLaser': PenetrantLaser,
+    'Billiard': Billiard,
+    'Bubble': Bubble,
+    'ToxicBall': Skill,
+    'StoneColumn': Skill,
+    'AcceleratingSpike': Skill,
+    'Mud': Skill
 }

@@ -1,6 +1,7 @@
 import pygame as pg
 import math
 import util
+import random
 
 class Visible(pg.sprite.Sprite):
     def __init__(self, camera, loc = pg.math.Vector2(), orientation = 0, image = None, rotate_image = True):
@@ -63,7 +64,7 @@ class DamageMark(Accessory):
         font = util.get_font(18)
         image, rect = font.render(text, fgcolor = (55, 55, 55), style = pg.freetype.STYLE_STRONG)
         font.render_to(image, (0, 0), text, fgcolor = (255, 0, 0))
-        drift = pg.math.Vector2(16, -16)
+        drift = pg.math.Vector2(random.randint(12, 20), random.randint(-20, -12))
         super().__init__(owner, drift = drift, image = image, rotate_image = False)
         self.value = value
         self.life = 20

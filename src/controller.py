@@ -29,7 +29,7 @@ class Controller():
         self.camera.follow = self.player
         self.camera.loc = self.player.loc.copy()
         self.camera.orientation = self.player.orientation
-        self.load_entity(self.player)
+        self.load_directing(self.player)
 
     def load_floor(self, floor_image):
         if self.player is None:
@@ -38,10 +38,14 @@ class Controller():
         self.boundary = pg.math.Vector2(self.floor.origional_image.get_rect().height/2,
          self.floor.origional_image.get_rect().width/2)
 
-    def load_entity(self, entity):
+    def load_directing(self, entity):
         self.entities.add(entity)
         self.acessories.add(accessories.Direction_indicator(entity))
-        self.acessories.add(accessories.State_ring(entity))
+        self.acessories.add(accessories.State_bar(entity))
+
+    def load_entity(self, entity):
+        self.entities.add(entity)
+        self.acessories.add(accessories.State_bar(entity))
 
     def start(self):
         self.keys = util.read_config('key_setting.json')
@@ -94,9 +98,11 @@ class Controller():
 
     def keyupdate(self):
         if self.keys['turn left'] in self.pressed:
-            self.player.orientation += 3
+            if all([e.name != 'unmovable' for e in self.player.effects]):
+                self.player.orientation += 3
         if self.keys['turn right'] in self.pressed:
-            self.player.orientation -= 3
+            if all([e.name != 'unmovable' for e in self.player.effects]):
+                self.player.orientation -= 3
         if self.keys['up'] in self.pressed:
             self.player.move(0)
         if self.keys['down'] in self.pressed:
