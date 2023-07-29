@@ -90,3 +90,10 @@ class Bubble(visibles.Movable):
                 self.properties['speed'] -= 1
         self.move()
         super().update()
+
+class StoneColumn(visibles.Stationary):
+    def __init__(self, owner, drift, image, properties = None):
+        self.radius = properties.get('size', 32)
+        loc = owner.loc + drift.rotate(owner.orientation)
+        super().__init__(owner.controller, loc = loc, orientation = 0, faction = owner.faction,
+         image = image, radius = self.radius, rotate_image = False, properties = properties)

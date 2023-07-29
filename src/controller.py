@@ -21,7 +21,7 @@ class Controller():
         self.floor = None
 
         self.fields = pg.sprite.Group()
-        self.entities = pg.sprite.Group()
+        self.entities = FlexibleGroup()
         self.acessories = pg.sprite.Group()
 
     def load_player(self, player):
@@ -207,3 +207,25 @@ class Camera():
             self.orientation = self.follow.orientation
         else:
             self.orientation -= dif/2
+
+class FlexibleGroup(pg.sprite.Group):
+    def draw(self, surface, bgsurf=None, special_flags=0):  
+        sprites = sorted(self.sprites(), key = lambda sprite: sprite.rect.center[1])
+        if hasattr(surface, "blits"):
+            self.spritedict.update(
+                zip(
+                    sprites,
+                    surface.blits(
+                        (spr.image, spr.rect, None, special_flags) for spr in sprites
+                    ),
+                )
+            )
+        else:
+            for spr in sprites:
+                self.spritedict[spr] = surface.blit(
+                    spr.image, spr.rect, None, special_flags
+                )
+        self.lostsprites = []
+        dirty = self.lostsprites
+
+        return dirty

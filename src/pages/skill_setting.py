@@ -10,8 +10,9 @@ class Page(util.Rolling_Box):
         self.load_description()
         self.load_player()
         rect = pg.display.get_surface().get_rect()
-        self.plane = infomation_plane(pg.Rect(rect.width*0.4, rect.height*0.05, rect.width*0.5, rect.height*0.9))
-        rect.width = rect.width//3
+        self.plane = infomation_plane(pg.Rect(rect.width/3 + rect.w*0.01, rect.height*0.05, rect.width/3 - rect.w*0.02, rect.height*0.9))
+        self.plane2 = equiped_plane(pg.Rect(rect.width/3*2 + rect.w*0.01, rect.height*0.05, rect.width/3 - rect.w*0.02, rect.height*0.9))
+        rect.width = rect.width/3
         button_rect = pg.Rect(0, 0, rect.width, rect.height*0.18)
         super().__init__(rect, button_rect, [self.description.get(i, {'name':i})['name'] for i in skill_names], util.load_image('basic/loading_page.png'))
 
@@ -31,6 +32,7 @@ class Page(util.Rolling_Box):
 
     def draw(self):
         super().draw()
+        self.plane2.draw(None, None, self.description, self.player)
         if self.skill_names[self.curser] in self.description:
             name = self.description[self.skill_names[self.curser]]['name']
             icon = pg.Surface((64, 64))
@@ -74,9 +76,8 @@ class infomation_plane():
     def __init__(self, rect):
         self.rect = rect
         self.image = pg.Surface(rect.size, pg.SRCALPHA)
-        self.image.fill((255,255,255,128))
+        self.image.fill((55,55,55,128))
         self.label_image = util.load_image('basic/label.png', (rect.width, rect.height*0.18))
-        self.font = util.get_font(32)
         self.iconlen = min(self.rect.width, self.rect.height*0.3)
 
     def draw(self, name, icon, desc, playerinfo):
@@ -87,7 +88,7 @@ class infomation_plane():
 
         image.blit(self.label_image, (0, iconlen))
 
-        font = self.font
+        font = util.get_font(32)
         font_rect = font.get_rect(name)
         font_rect.center = (self.rect.width*0.5, iconlen + self.rect.height*0.09)
         font.render_to(image, font_rect, name, fgcolor=(251,254,110))
@@ -99,11 +100,39 @@ class infomation_plane():
         pg.display.get_surface().blit(image, self.rect)
 
     def render_line(self, text, line, image):
-        start = self.iconlen + self.rect.height*0.18 + line*self.font.get_sized_height()
-        self.font.render_to(image, (0, start), text, fgcolor=(251,254,110))
+        size = 26
+        start = self.iconlen + self.rect.height*0.18 + line*size
+        util.get_font(size).render_to(image, (0, start), text, fgcolor=(251,254,110))
 
     def split_into(self, text, length = 12):
         if len(text) <= length:
             return [text]
         else:
             return [text[:length]] + self.split_into(text[length:], length)
+
+class equiped_plane(infomation_plane):
+    def __init__(self, rect):
+        super().__init__(rect)
+        self.iconlen = -self.rect.height*0.10
+
+    def draw(self, name, icon, desc, playerinfo):
+        image = self.image.copy()
+        lines = [util.get_word('primary weapon')]
+        lines.append('')
+        for skill_name in playerinfo['primary weapon']['skills']:
+            if skill_name in desc:
+                lines.append(desc[skill_name]['name'])
+            else:
+                lines.append(skill_name)
+        lines.append('')
+        lines.append(util.get_word('sub weapon'))
+        lines.append('')
+        for skill_name in playerinfo['sub weapon']['skills']:
+            if skill_name in desc:
+                lines.append(desc[skill_name]['name'])
+            else:
+                lines.append(skill_name)
+        for i in range(len(lines)):
+            self.render_line(lines[i], i, image)
+
+        pg.display.get_surface().blit(image, self.rect)

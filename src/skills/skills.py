@@ -591,7 +591,35 @@ class Bubble(Skill):
             entity = entities.Bubble(self.owner, orientation, self.image, self.properties)
             self.owner.controller.entities.add(entity)
 
+class StoneColumn(Skill):
+    def __init__(self, owner, properties = None):
+        self.image = util.load_image_alpha('skills/stonecolumn.png')
+        self.field_image = pg.Surface((32, 32))
+        pg.draw.circle(self.field_image, (255,0,0), (16, 16), 16)
+        self.field_image.set_colorkey((0,0,0))
+        self.field_image.set_alpha(80)
+        super().__init__(owner, properties, accept_keys = None)
 
+    def update_properties(self, properties):
+        origin = {'max_hp': 200, 'max_mp': 1, 'mp_regen': 0, 'size': 32, 'attack': 100,
+         'mp_consumption': 200, 'after': 12, 'life': 24}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+        image_size = self.properties['size']*2
+        rect = self.image.get_rect()
+        self.image = pg.transform.scale(self.image, (image_size, image_size*rect.h/rect.w))
+        self.field_image = pg.transform.scale(self.field_image, (image_size, image_size))
+
+    def conduct(self, direction):
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if self.consume_mp():
+            # begin to cast
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            entity = entities.StoneColumn(self.owner, pg.math.Vector2(64, 0), self.image, self.properties)
+            field = fields.StoneColumn(self.owner, entity, pg.math.Vector2(64, 0), self.field_image, self.properties)
+            self.owner.controller.fields.add(field)
 
 dictionary = {
     'Skill': Skill,
@@ -611,8 +639,8 @@ dictionary = {
     'PenetrantLaser': PenetrantLaser,
     'Billiard': Billiard,
     'Bubble': Bubble,
+    'StoneColumn': StoneColumn,
     'ToxicBall': Skill,
-    'StoneColumn': Skill,
     'AcceleratingSpike': Skill,
     'Mud': Skill
 }

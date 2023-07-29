@@ -9,6 +9,8 @@ class Field(visibles.Visible):
         super().__init__(controller.camera, loc, orientation, image, rotate_image)
 
     def touch(self, entity):
+        if entity.faction != self.faction:
+            return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
         return False
 
 class AccessoryField(Field):
@@ -61,11 +63,6 @@ class MagicBullet(AccessoryField):
                 e.passive_move(direction = self.orientation, distance = self.knockback)
                 self.owner.kill()
                 self.kill()
-
-    def touch(self, entity):
-        if entity.faction != self.faction:
-            return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
-        return False
 
 class Cut(AccessoryField):
     def __init__(self, owner, orient_drift, images, properties = None, side = False):
@@ -190,11 +187,6 @@ class FireBallExplode(Field):
         if self.life <= 0:
             self.kill()
         super().update()
-
-    def touch(self, entity):
-        if entity.faction != self.faction:
-            return (entity.loc - self.loc).length_squared() <= (entity.radius + self.radius)**2
-        return False
 
 class HelixCut(AccessoryField):
     def __init__(self, owner, image, properties = None):
@@ -362,13 +354,33 @@ class PenetrantLaser(AccessoryField):
 
 class Billiard(MagicBullet):
     def update(self):
-        self.drift = pg.math.Vector2(2*self.properties.get('extension', 1.1), 0)
-        super().update()
-
-    def update(self):
         AccessoryField.update(self)
         for e in self.controller.entities:
             if self.touch(e):
                 e.damage(self.attack)
                 e.passive_move(direction = self.orientation, distance = self.knockback)
                 self.owner.bounce_(e)
+
+class StoneColumn(Field):
+    def __init__(self, owner, entity, drift, image, properties = None):
+        self.owner = owner
+        self.drift = drift
+        loc = owner.loc + drift.rotate(owner.orientation)
+        self.subentity = entity
+        self.properties = properties
+        self.radius = properties.get('size', 32)*properties.get('extension', 1)
+        self.attack = properties.get('attack', 100)
+        self.life = properties.get('life', 24)
+        self.life = max(self.life, 3)
+        super().__init__(owner.controller, loc, orientation = 0, faction = owner.faction, image = image, rotate_image = False)
+
+    def update(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.kill()
+            for e in self.controller.entities:
+                if self.touch(e):
+                    e.damage(self.attack)
+            self.controller.entities.add(self.subentity)
+            self.subentity.update()
+        super().update()
