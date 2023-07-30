@@ -1,5 +1,6 @@
 import pygame as pg
 import visibles
+import automixin
 
 class Fliping(visibles.Movable):
     def __init__(self, owner, loc = pg.math.Vector2(), orientation = 0, images = None, radius = None, properties = None):
@@ -7,6 +8,7 @@ class Fliping(visibles.Movable):
          image = images[0], radius = radius, rotate_image = True, properties = properties)
         self.images = images
         self.flip_num = 0
+        self.handle_image()
 
     def update(self):
         self.flip_num += 1
@@ -20,39 +22,42 @@ class MagicBullet(Fliping):
         radius = properties.get('size', 32)
         super().__init__(owner, loc = loc, orientation = orientation, images = images, radius = radius, properties = properties)
         self.life = properties.get('life', 100)
+        self.edge = False
 
     def update(self):
         self.life -= 1
-        if self.life <= 0:
+        if self.life <= 0 or self.edge:
             self.kill()
         self.move()
         super().update()
 
-class Missile(Fliping):
+class Missile(Fliping, automixin.Navigated):
     def __init__(self, owner, images, loc = pg.math.Vector2(), orientation = 0, properties = None):
         radius = properties.get('size', 32)
         super().__init__(owner, loc = loc, orientation = orientation, images = images, radius = radius, properties = properties)
         self.life = properties.get('life', 200)
+        self.edge = False
 
     def update(self):
         self.life -= 1
-        if self.life <= 0:
+        if self.life <= 0 or self.edge:
             self.kill()
         self.auto()
         self.move()
         super().update()
 
     def auto(self):
+        min_distance = self.properties['sense']**2
+        min_destination = None
         for e in self.controller.entities:
             if e.faction != self.faction:
                 vector = e.loc - self.loc
-                if vector.length_squared() <= self.properties['sense']**2:
-                    polar = (vector.as_polar()[1] - self.orientation)%360
-                    if polar > self.properties['turn'] and polar < 360-self.properties['turn']:
-                        if polar > 180:
-                            self.orientation -= self.properties['turn']
-                        else:
-                            self.orientation += self.properties['turn']
+                distance = vector.length_squared()
+                if distance < min_distance:
+                    min_distance = distance
+                    min_destination = e.loc
+        if min_destination is not None:
+            self.navigate(min_destination)
 
 class Billiard(MagicBullet):
     def update(self):
@@ -80,6 +85,7 @@ class Bubble(visibles.Movable):
         self.radius = properties.get('size', 32)
         super().__init__(owner.controller, loc = owner.loc.copy(), orientation = orientation, faction = owner.faction,
          image = image, radius = self.radius, rotate_image = False, properties = properties.copy())
+        self.handle_image()
 
     def update(self):
         self.life -= 1
@@ -97,3 +103,5 @@ class StoneColumn(visibles.Stationary):
         loc = owner.loc + drift.rotate(owner.orientation)
         super().__init__(owner.controller, loc = loc, orientation = 0, faction = owner.faction,
          image = image, radius = self.radius, rotate_image = False, properties = properties)
+        self.handle_image()
+

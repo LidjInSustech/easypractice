@@ -97,7 +97,7 @@ class MagicBullet(Skill):
 
     def update_properties(self, properties):
         origin = {'max_hp': 100, 'max_mp': 1, 'mp_regen': 0, 'speed': 5, 'size': 8, 'knockback': 8,
-         'life': 150, 'attack': 60, 'extension': 1.1, 'mp_consumption': 50, 'before': 8, 'duration': 8, 'after': 12}
+         'life': 1000, 'attack': 60, 'extension': 1.1, 'mp_consumption': 50, 'before': 8, 'duration': 8, 'after': 12}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -289,7 +289,7 @@ class Missile(Skill):
 
     def update_properties(self, properties):
         origin = {'max_hp': 100, 'max_mp': 1, 'mp_regen': 0, 'speed': 4, 'size': 16, 'after': 12,
-         'life': 300, 'attack': 60, 'cd': 50, 'extension': 1.1, 'mp_consumption': 200, 'sense': 384, 'turn': 1}
+         'life': 1000, 'attack': 60, 'cd': 50, 'extension': 1.1, 'mp_consumption': 200, 'sense': 384, 'turn': 1}
         origin['attack'] = properties.get('attack', 100)*origin['attack']/100
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
@@ -511,10 +511,10 @@ class PenetrantLaser(Skill):
         self.properties = origin
         length = self.properties['length']
         width = self.properties['width']
-        image0 = pg.Surface((2*width, 2*length))
+        image0 = pg.Surface((2*width, 2*length), flags=pg.SRCALPHA)
         image0.fill((255,0,0))
         image0.set_alpha(80)
-        image1 = pg.Surface((2*width, 2*length))
+        image1 = pg.Surface((2*width, 2*length), flags=pg.SRCALPHA)
         image1.fill((255,255,255))
         self.images = [image0, image1]
 

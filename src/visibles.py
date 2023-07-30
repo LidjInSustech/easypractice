@@ -91,6 +91,8 @@ class Entity(Visible):
             properties['mp_regen'] = 0
         if 'speed' not in properties:
             properties['speed'] = 5
+        if 'turn' not in properties:
+            properties['turn'] = 3
         if 'defense' not in properties:
             properties['defense'] = 0
         if 'attack' not in properties:
@@ -134,12 +136,13 @@ class Entity(Visible):
         super().kill()
 
     def damage(self, value):
-        if any(e.name == 'invulnerable' for e in self.effects):
-            return
+        if any(e.name == 'invincible' for e in self.effects):
+            return False
         value -= self.properties.get('armor', 0)
         if value > 0:
             self.hp -= value
             self.controller.acessories.add(DamageMark(self, value))
+        return True
 
     def effect_extend(self, effect):
         for e in self.effects:
@@ -166,6 +169,9 @@ class Entity(Visible):
                 self.loc -= move_vector
                 if distance > 2:
                     self.attampt_move(collisions, direction, distance/2)
+
+    def update_properties(self):
+        pass
 
 class Movable(Entity):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, faction = 0, image = None, radius = None, rotate_image = False, properties = None):

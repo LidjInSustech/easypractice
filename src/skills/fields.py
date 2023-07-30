@@ -96,6 +96,8 @@ class Cut(AccessoryField):
             for entities in self.controller.entities:
                 if self.touch(entities):
                     entities.damage(self.attack)
+        else:
+            super().update()
 
     def touch(self, entity):
         if self.side:
@@ -145,6 +147,8 @@ class Lunge(AccessoryField):
             for entities in self.controller.entities:
                 if self.touch(entities):
                     entities.damage(self.attack)
+        else:
+            super().update()
 
     def touch(self, entity):
         if entity.faction != self.faction:
@@ -180,6 +184,7 @@ class FireBallExplode(Field):
 
     def update(self):
         if self.life == 5:
+            self.controller.camera.shake = 12
             for e in self.controller.entities:
                 if self.touch(e):
                     e.damage(self.attack)

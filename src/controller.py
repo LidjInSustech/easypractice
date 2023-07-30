@@ -1,6 +1,7 @@
 import pygame as pg
 import visibles
 import math
+import random
 import util
 import pages.key_setting
 import pages.settings
@@ -55,6 +56,7 @@ class Controller():
         
         clock = pg.time.Clock()
         self.flamerate = 60
+        self.blood = False
         self.state = 1
         pg.event.set_allowed([pg.QUIT, pg.KEYUP, pg.KEYDOWN])
         while self.state == 1:
@@ -86,6 +88,13 @@ class Controller():
         self.camera.update()
 
         self.draw()
+        self.sceneupdate()
+
+    def sceneupdate(self):
+        if self.flamerate < 60:
+            self.flamerate *= 2
+            self.flamerate = min(self.flamerate, 60)
+        self.blood = False
 
     def draw(self):
         self.predraw.fill((0,0,0))
@@ -94,15 +103,20 @@ class Controller():
         self.entities.draw(self.predraw)
         self.acessories.draw(self.predraw)
         self.screen.blit(pg.transform.scale(self.predraw, self.screen.get_rect().size), (0,0))
+        if self.blood:
+            blood = pg.Surface(self.screen.get_rect().size)
+            blood.fill((255,0,0))
+            blood.set_alpha(50)
+            self.screen.blit(blood, (0,0))
         pg.display.flip()
 
     def keyupdate(self):
         if self.keys['turn left'] in self.pressed:
             if all([e.name != 'unmovable' for e in self.player.effects]):
-                self.player.orientation += 3
+                self.player.orientation += self.player.properties['turn']
         if self.keys['turn right'] in self.pressed:
             if all([e.name != 'unmovable' for e in self.player.effects]):
-                self.player.orientation -= 3
+                self.player.orientation -= self.player.properties['turn']
         if self.keys['up'] in self.pressed:
             self.player.move(0)
         if self.keys['down'] in self.pressed:
@@ -153,34 +167,20 @@ class Controller():
         if key == self.keys['alter arm']:
             self.player.switch_weapon()
 
-    def drawUI(self):#deprecated
-        head = pg.transform.scale(self.hero.ori_image,(32,32))
-        self.screen.blit(head, (4,4))
-        width = 8
-        leftlimit = 32+8
-        rightlimit = self.screen.get_width()*2//5
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.health_point/self.hero.max_hp)
-        margin = 8
-        pg.draw.line(self.screen, (255,0,0,100), (leftlimit, margin), (point, margin), width)
-        pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
-        point = pg.math.lerp(leftlimit, rightlimit, self.hero.magis_point/self.hero.max_mp)
-        margin = 20
-        pg.draw.line(self.screen, (0,0,255,100), (leftlimit, margin), (point, margin), width)
-        pg.draw.line(self.screen, (155,155,155,100), (point, margin), (rightlimit, margin), width)
-        margin = 4
-        count = 0
-        for effect in self.hero.effects:
-            if isinstance(effect, effects.icon):
-                self.screen.blit(effect.image, (rightlimit+width+count*(32+2), margin))
-                count += 1
-
     def maintain_boundaries(self):
-        x_limit = self.boundary.x
-        y_limit = self.boundary.y
         for entity in self.entities:
-            x = pg.math.clamp(entity.loc.x, -x_limit, x_limit)
-            y = pg.math.clamp(entity.loc.y, -y_limit, y_limit)
-            entity.loc = pg.math.Vector2(x, y)
+            if entity.loc.x > self.boundary.x:
+                entity.loc.x = self.boundary.x
+                entity.edge = True
+            elif entity.loc.x < -self.boundary.x:
+                entity.loc.x = -self.boundary.x
+                entity.edge = True
+            if entity.loc.y > self.boundary.y:
+                entity.loc.y = self.boundary.y
+                entity.edge = True
+            elif entity.loc.y < -self.boundary.y:
+                entity.loc.y = -self.boundary.y
+                entity.edge = True
 
     def check_finish(self):
         if self.player.hp <= 0:
@@ -192,6 +192,7 @@ class Camera():
         self.orientation = 0
         self.follow = follow
         self.center = center
+        self.shake = 0
 
     def update(self):
         if self.follow is None:
@@ -207,6 +208,10 @@ class Camera():
             self.orientation = self.follow.orientation
         else:
             self.orientation -= dif/2
+        
+        if self.shake:
+            self.shake -= 1
+            self.loc += pg.math.Vector2(random.randint(-5,5), random.randint(-5,5))
 
 class FlexibleGroup(pg.sprite.Group):
     def draw(self, surface, bgsurf=None, special_flags=0):  

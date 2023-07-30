@@ -22,21 +22,26 @@ class Chemotaxis():
         elif result < limit:
             self.thought = (self.thought + 2) % 3
 
-class RandomDestination():
+class Navigated():
+    def navigate(self, destination):
+        vector = destination - self.loc
+        length, angle = vector.as_polar()
+        angle = (angle - self.orientation) % 360
+        turn = self.properties['turn']
+        if angle < 180 and angle > turn:
+            self.orientation += turn
+        elif angle >= 180 and angle < 360 - turn:
+            self.orientation -= turn
+        else:
+            self.move()
+
+class RandomDestination(Navigated):
     def free(self):
         if getattr(self, 'destination', None) is None:
             self.destination = self.new_destination()
         if self.loc.distance_to(self.destination) < 10:
             self.destination = self.new_destination()
-        vector = self.destination - self.loc
-        length, angle = vector.as_polar()
-        angle = (angle - self.orientation) % 360
-        if angle < 180 and angle > 3:
-            self.orientation += 3
-        elif angle >= 180 and angle < 357:
-            self.orientation -= 3
-        else:
-            self.move()
+        self.navigate(self.destination)
     
     def new_destination(self):
         boundary = self.controller.boundary

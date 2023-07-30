@@ -31,15 +31,28 @@ class Player(visibles.Movable):
             skill.stop()
         self.weaponnum = 1 - self.weaponnum
         self.weapon.equip(self)
+        self.update_properties()
+
+    def update_properties(self):
         for skill in self.weapon.skills:
             skill.update_properties(self.properties)
+
+    def damage(self, value):
+        if super().damage(value):
+            self.controller.blood = True
+            self.controller.flamerate = 4
         
-class RandomWalk(visibles.Movable, automixin.Patrol):
+class RandomWalk(visibles.Movable, automixin.RandomDestination):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, image = None, radius = None):
         super().__init__(controller, loc = loc, orientation = orientation, faction = 2,
-         image = image, radius = radius, rotate_image = False)
-        self.set_path([pg.math.Vector2(100, 0), pg.math.Vector2(-100, 0)])
+         image = image, radius = radius, properties = {'attack': 100, 'mp_regen': 1}, rotate_image = False)
+        self.skill = dictionary['StoneColumn'](self)
+        self.counter = 0
 
     def update(self):
         self.free()
+        self.counter += 1
+        if self.counter > 100:
+            self.skill.conduct('up')
+            self.counter = 0
         super().update()
