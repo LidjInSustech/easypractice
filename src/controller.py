@@ -25,6 +25,8 @@ class Controller():
         self.entities = FlexibleGroup()
         self.acessories = pg.sprite.Group()
 
+        self.stop_clocks = pg.sprite.GroupSingle()
+
     def load_player(self, player):
         self.player = player
         self.camera.follow = self.player
@@ -81,9 +83,16 @@ class Controller():
                     self.pressed.remove(event.key)
         self.keyupdate()
         self.floor.update()
-        self.entities.update()
-        self.maintain_boundaries()
+
+        if self.stop_clocks.sprite:
+            self.stop_clocks.update()
+            [e.handle_image() for e in self.entities.sprites()]
+            #[e.handle_image() for e in self.fields.sprites()]
+        else:
+            self.entities.update()
         self.fields.update()
+
+        self.maintain_boundaries()
         self.acessories.update()
         self.camera.update()
 

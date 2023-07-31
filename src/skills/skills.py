@@ -122,7 +122,8 @@ class MagicBullet(Skill):
                 else:
                     self.owner.effects.append(effects.countdown_effect('busy',
                      self.properties['before'] + self.properties['duration'] + self.properties['after']))
-                    self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['before'] + self.properties['duration']))
+                    self.owner.effect_extend(effects.countdown_effect('unmovable',
+                     self.properties['before'] + self.properties['duration']))
                     for i in range(3):
                         time = self.properties['before'] + self.properties['duration']*i/2
                         self.owner.effects.append(effects.delay_action(time, lambda :self.post(self.owner.orientation)))
@@ -179,7 +180,7 @@ class HeavyCut(Skill):
         if any([effects.name == 'busy' for effects in self.owner.effects]):
             return
         self.owner.effects.append(effects.countdown_effect('busy', self.properties['before']+self.properties['duration'] + self.properties['after']))
-        self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['before']+self.properties['duration']))
+        self.owner.effect_extend(effects.countdown_effect('unmovable', self.properties['before']+self.properties['duration']))
         match direction:
             case 'up':
                 e = fields.Cut(self.owner, 0, self.f_images, self.properties)
@@ -238,7 +239,7 @@ class HeavyLunge(Skill):
         if any([effects.name == 'busy' for effects in self.owner.effects]):
             return
         self.owner.effects.append(effects.countdown_effect('busy', self.properties['before']+self.properties['duration'] + self.properties['after']))
-        self.owner.effects.append(effects.countdown_effect('unmovable', self.properties['before']+self.properties['duration']))
+        self.owner.effect_extend(effects.countdown_effect('unmovable', self.properties['before']+self.properties['duration']))
         match direction:
             case 'up':
                 e = fields.Lunge(self.owner, 0, self.f_images, self.properties, dash = self.properties['dash'])
@@ -621,6 +622,55 @@ class StoneColumn(Skill):
             field = fields.StoneColumn(self.owner, entity, pg.math.Vector2(64, 0), self.field_image, self.properties)
             self.owner.controller.fields.add(field)
 
+class AccelerateClocks(Skill):
+    def __init__(self, owner, properties = None):
+        #self.effect = None
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'mp_consumption': 600, 'after': 12, 'benefit_time': 200, 'multiple': 2}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        origin['speed'] = properties['speed']*(origin['multiple']-1)
+        origin['turn'] = properties['turn']*(origin['multiple']-1)
+        self.properties = origin
+
+    def conduct(self, direction):
+        #if self.effect is None:
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if not self.consume_mp():
+            return
+        self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+        self.effect = E.AccelerateClocks(self.owner, self.properties)
+        self.owner.effects.append(self.effect)
+        self.owner.properties['speed'] += self.properties['speed']
+        self.owner.properties['turn'] += self.properties['turn']
+        self.owner.update_properties()
+        #else:
+            #self.effect.count = -1
+            #self.effect = None
+
+class StopClocks(Skill):
+    def __init__(self, owner, properties = None):
+        super().__init__(owner, properties, accept_keys = None)
+
+    def update_properties(self, properties):
+        origin = {'mp_consumption': 800, 'after': 12, 'benefit_time': 200}
+        for property in origin:
+            origin[property] = properties.get('x_' + property, 1)*origin[property]
+        self.properties = origin
+
+    def conduct(self, direction):
+        if any([effects.name == 'busy' for effects in self.owner.effects]):
+            return
+        if not self.consume_mp():
+            return
+        self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+        self.effect = E.StopClocks(self.owner, self.properties)
+        self.owner.effects.append(self.effect)
+        self.owner.controller.stop_clocks.sprite = self.owner
+
 dictionary = {
     'Skill': Skill,
     'FastMove': FastMove,
@@ -640,7 +690,27 @@ dictionary = {
     'Billiard': Billiard,
     'Bubble': Bubble,
     'StoneColumn': StoneColumn,
-    'ToxicBall': Skill,
-    'AcceleratingSpike': Skill,
-    'Mud': Skill
+    'AccelerateClocks': AccelerateClocks,#加速术
+    'StopClocks': StopClocks,#时停
+    'ToxicBall': Skill,#毒瓶
+    'AcceleratingSpike': Skill,#加速针
+    'Boomerang': Skill,#回旋镖
+    'SuspendShield': Skill,#悬浮盾
+    'SuspendSword': Skill,#悬浮剑
+    'SuspendGrimoire': Skill,#悬浮魔导书
+    'SpatialKnife': Skill,#空间刀
+    'Vortex': Skill,#漩涡
+    'SpawnSeeker': Skill,#召唤追踪者
+    'SpawnTurret': Skill,#召唤炮塔
+    'Portal': Skill,#传送门
+    'Hook': Skill,#钩子
+    'BlowOff': Skill,#吹飞
+    'MagicShield': Skill,#魔法盾
+    'Bump': Skill,#撞击
+    'Lock': Skill,#封印
+    'Telecontrol': Skill,#遥控
+    'FireWall': Skill,#火墙
+    'LandMine': Skill,#地雷
+    'MindControl': Skill,#精神控制
+    'Stealth': Skill#隐身
 }

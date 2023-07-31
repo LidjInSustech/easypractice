@@ -8,8 +8,10 @@ class Healing(E.countdown_effect):
         super().__init__('healing', life = self.life)
 
     def update(self):
-        super().update()
-        self.owner.hp = min(self.owner.hp + self.heal, self.owner.max_hp)
+        if super().update():
+            self.owner.hp = min(self.owner.hp + self.heal, self.owner.max_hp)
+            return True
+        return False
 
 class HelixCut(E.effect):
     def __init__(self, owner, field, properties):
@@ -29,3 +31,40 @@ class HelixCut(E.effect):
             self.count = 4
             self.owner.effect_extend(E.countdown_effect('busy', life = 4))
         return True
+
+class AccelerateClocks(E.countdown_effect):
+    def __init__(self, owner, properties):
+        self.addition = properties.get('multiple', 2) - 1
+        self.owner = owner
+        self.count = self.addition 
+        life = properties.get('benefit_time', 100)
+        self.roll_back = False
+        self.properties = properties
+        super().__init__('accelerate_clocks', life = life)
+
+    def update(self):
+        if super().update():
+            if self.count > 0:
+                self.count -= 1
+                self.owner.update()
+            else:
+                self.count += self.addition
+                self.owner.controller.flamerate = 15
+            return True
+        if not self.roll_back:
+            self.owner.properties['speed'] -= self.properties['speed']
+            self.owner.properties['turn'] -= self.properties['turn']
+            self.owner.update_properties()
+            self.roll_back = True
+        return False
+
+class StopClocks(E.countdown_effect):
+    def __init__(self, owner, properties):
+        self.owner = owner
+        super().__init__('stop_clocks', life = properties.get('benefit_time', 200))
+
+    def update(self):
+        if super().update():
+            return True
+        self.owner.controller.stop_clocks.empty()
+        return False

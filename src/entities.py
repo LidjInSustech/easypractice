@@ -46,7 +46,7 @@ class RandomWalk(visibles.Movable, automixin.RandomDestination):
     def __init__(self, controller, loc = pg.math.Vector2(), orientation = 0, image = None, radius = None):
         super().__init__(controller, loc = loc, orientation = orientation, faction = 2,
          image = image, radius = radius, properties = {'attack': 100, 'mp_regen': 1}, rotate_image = False)
-        self.skill = dictionary['StoneColumn'](self)
+        self.skill = dictionary['Missile'](self)
         self.counter = 0
 
     def update(self):
