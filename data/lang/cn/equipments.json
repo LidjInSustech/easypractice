@@ -12,9 +12,33 @@
             "name": "铁剑",
             "desc": "普通的铁剑"
         },
-        "wand": {
-            "name": "魔杖",
+        "wood wand": {
+            "name": "木魔杖",
             "desc": "普通的魔杖"
+        },
+        "torch wand": {
+            "name": "火把魔杖",
+            "desc": "有火焰效果的魔杖"
+        },
+        "wooden bow": {
+            "name": "木弓",
+            "desc": "普通的木弓"
+        },
+        "sword of the phoenix's rebirth": {
+            "name": "浴火长剑",
+            "desc": "浴火长剑"
+        },
+        "handset": {
+            "name": "遥控手杖",
+            "desc": "像遥控器一样的手杖"
+        },
+        "launching tube": {
+            "name": "发射管",
+            "desc": "发射管"
+        },
+        "gem stick": {
+            "name": "宝石手杖",
+            "desc": "镶嵌有宝石的手杖"
         },
         "shield": {
             "name": "盾",
@@ -22,13 +46,41 @@
         }
     },
     "equipments": {
-        "armor": {
-            "name": "盔甲",
-            "desc": "普通的盔甲"
+        "Hourglass": {
+            "name": "沙漏",
+            "desc": "延长有益效果"
         },
-        "speed_ring": {
-            "name": "速度戒指",
-            "desc": "有加速效果戒指"
+        "MagicPot": {
+            "name": "魔力瓶",
+            "desc": "增加魔力上限"
+        },
+        "GuardianRing": {
+            "name": "守护戒指",
+            "desc": "增加防御"
+        },
+        "BloodLamp": {
+            "name": "血眀灯",
+            "desc": "增加血量上限"
+        },
+        "AccelerationTalisman": {
+            "name": "加速护符",
+            "desc": "加速护符"
+        },
+        "SharpGloves": {
+            "name": "锋利手套",
+            "desc": "锋利加成"
+        },
+        "MagicEye": {
+            "name": "魔眼",
+            "desc": "增加召唤物大小"
+        },
+        "SpiritPearl": {
+            "name": "灵气宝珠",
+            "desc": "增加魔力回复"
+        },
+        "ExquisiteGlasses": {
+            "name": "精妙眼镜",
+            "desc": "减小后摇"
         }
     }
 }

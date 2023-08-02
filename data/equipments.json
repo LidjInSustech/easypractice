@@ -13,21 +13,79 @@
                 ["defense", "plus", 10],
                 ["sharp", "plus", 2]
         ],
-        "wand": [
+        "wood wand": [
                 ["attack", "plus", 20],
                 ["defense", "plus", 5],
                 ["x_cd", "plus", -0.2]
+        ],
+        "torch wand": [
+                ["attack", "plus", 30],
+                ["defense", "plus", 5],
+                ["x_cd", "plus", -0.2],
+                ["mp_regent", "plus", 1]
+        ],
+        "wooden bow": [
+                ["attack", "plus", 20],
+                ["defense", "plus", 5]
+        ],
+        "sword of the phoenix's rebirth": [
+                ["attack", "plus", 50],
+                ["defense", "plus", 20],
+                ["sharp", "plus", 3],
+                ["max_hp", "plus", 200],
+                ["mp_regen", "plus", 1]
+        ],
+        "handset": [
+                ["attack", "plus", 10],
+                ["defense", "plus", -5],
+                ["x_cd", "plus", -0.2]
+        ],
+        "launching tube": [
+                ["attack", "plus", 20],
+                ["defense", "plus", 10],
+                ["x_cd", "plus", -0.2]
+        ],
+        "gem stick" : [
+                ["attack", "plus", 30],
+                ["defense", "plus", 15],
+                ["x_cd", "plus", -0.3],
+                ["mp_regen", "plus", 2],
+                ["max_mp", "plus", 200]
         ],
         "shield": [
                 ["defense", "plus", 50]
         ]
     },
     "equipments": {
-        "armor": [
-                ["defense", "plus", 5]
+        "MagicPot": [
+                ["max_mp", "plus", 200]
         ],
-        "speed_ring": [
-                ["speed", "plus", 1]
+        "BloodLamp": [
+                ["max_hp", "plus", 200]
+        ],
+        "GuardianRing": [
+                ["defense", "plus", 10]
+        ],
+        "Hourglass": [
+                ["x_benefit_time", "plus", 0.2]
+        ],
+        "AccelerationTalisman": [
+                ["speed", "plus", 2]
+        ],
+        "MagicEye": [
+                ["x_size", "plus", 0.2]
+        ],
+        "SpiritPearl": [
+                ["mp_regen", "plus", 1]
+        ],
+        "ExquisiteGlasses": [
+                ["x_after", "plus", -0.2]
+        ],
+        "SharpGloves": [
+                ["sharp", "plus", 1]
+        ],
+        "MagicHat": [
+                ["max_mp", "plus", 100]
         ]
     }
 }
