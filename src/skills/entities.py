@@ -31,7 +31,7 @@ class MagicBullet(Fliping):
         self.move()
         super().update()
 
-class Missile(Fliping, automixin.Navigated):
+class Missile(Fliping, automixin.Missile):
     def __init__(self, owner, images, loc = pg.math.Vector2(), orientation = 0, properties = None):
         radius = properties.get('size', 32)
         super().__init__(owner, loc = loc, orientation = orientation, images = images, radius = radius, properties = properties)

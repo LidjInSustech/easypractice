@@ -38,11 +38,17 @@ class AccelerateClocks(E.countdown_effect):
         self.owner = owner
         self.count = self.addition 
         life = properties.get('benefit_time', 100)
+        self.mp_consumption = properties.get('mp_consumption', 3)
         self.roll_back = False
         self.properties = properties
         super().__init__('accelerate_clocks', life = life)
 
     def update(self):
+        if self.owner.mp < self.mp_consumption:
+            self.life = 0
+            return False
+        self.owner.mp -= self.mp_consumption
+        # start
         if super().update():
             if self.count > 0:
                 self.count -= 1
@@ -61,10 +67,12 @@ class AccelerateClocks(E.countdown_effect):
 class StopClocks(E.countdown_effect):
     def __init__(self, owner, properties):
         self.owner = owner
+        self.mp_consumption = properties.get('mp_consumption', 3)
         super().__init__('stop_clocks', life = properties.get('benefit_time', 200))
 
     def update(self):
-        if super().update():
+        if super().update() and self.owner.mp >= self.mp_consumption:
+            self.owner.mp -= self.mp_consumption
             return True
         self.owner.controller.stop_clocks.empty()
         return False

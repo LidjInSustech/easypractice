@@ -624,11 +624,11 @@ class StoneColumn(Skill):
 
 class AccelerateClocks(Skill):
     def __init__(self, owner, properties = None):
-        #self.effect = None
+        self.effect = None
         super().__init__(owner, properties, accept_keys = None)
 
     def update_properties(self, properties):
-        origin = {'mp_consumption': 600, 'after': 12, 'benefit_time': 200, 'multiple': 2}
+        origin = {'mp_consumption': 3, 'after': 12, 'benefit_time': 200, 'multiple': 2}
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
         origin['speed'] = properties['speed']*(origin['multiple']-1)
@@ -636,40 +636,41 @@ class AccelerateClocks(Skill):
         self.properties = origin
 
     def conduct(self, direction):
-        #if self.effect is None:
-        if any([effects.name == 'busy' for effects in self.owner.effects]):
-            return
-        if not self.consume_mp():
-            return
-        self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
-        self.effect = E.AccelerateClocks(self.owner, self.properties)
-        self.owner.effects.append(self.effect)
-        self.owner.properties['speed'] += self.properties['speed']
-        self.owner.properties['turn'] += self.properties['turn']
-        self.owner.update_properties()
-        #else:
-            #self.effect.count = -1
-            #self.effect = None
+        if self.effect is None:
+            if any([effects.name == 'busy' for effects in self.owner.effects]):
+                return
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            self.effect = E.AccelerateClocks(self.owner, self.properties)
+            self.owner.effects.append(self.effect)
+            self.owner.properties['speed'] += self.properties['speed']
+            self.owner.properties['turn'] += self.properties['turn']
+            self.owner.update_properties()
+        else:
+            self.effect.life = -1
+            self.effect = None
 
 class StopClocks(Skill):
     def __init__(self, owner, properties = None):
+        self.effect = None
         super().__init__(owner, properties, accept_keys = None)
 
     def update_properties(self, properties):
-        origin = {'mp_consumption': 800, 'after': 12, 'benefit_time': 200}
+        origin = {'mp_consumption': 4, 'after': 12, 'benefit_time': 200}
         for property in origin:
             origin[property] = properties.get('x_' + property, 1)*origin[property]
         self.properties = origin
 
     def conduct(self, direction):
-        if any([effects.name == 'busy' for effects in self.owner.effects]):
-            return
-        if not self.consume_mp():
-            return
-        self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
-        self.effect = E.StopClocks(self.owner, self.properties)
-        self.owner.effects.append(self.effect)
-        self.owner.controller.stop_clocks.sprite = self.owner
+        if self.effect is None:
+            if any([effects.name == 'busy' for effects in self.owner.effects]):
+                return
+            self.owner.effects.append(effects.countdown_effect('busy', self.properties['after']))
+            self.effect = E.StopClocks(self.owner, self.properties)
+            self.owner.effects.append(self.effect)
+            self.owner.controller.stop_clocks.sprite = self.owner
+        else:
+            self.effect.life = -1
+            self.effect = None
 
 dictionary = {
     'Skill': Skill,

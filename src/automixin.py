@@ -22,6 +22,17 @@ class Chemotaxis():
         elif result < limit:
             self.thought = (self.thought + 2) % 3
 
+class Missile():
+    def navigate(self, destination):
+        vector = destination - self.loc
+        length, angle = vector.as_polar()
+        angle = (angle - self.orientation) % 360
+        turn = self.properties['turn']
+        if angle < 180 and angle > turn:
+            self.orientation += turn
+        elif angle >= 180 and angle < 360 - turn:
+            self.orientation -= turn
+
 class Navigated():
     def navigate(self, destination):
         vector = destination - self.loc
