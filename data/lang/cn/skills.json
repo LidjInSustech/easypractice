@@ -50,5 +50,33 @@
      "Transposition":{
           "name": "传送",
           "desc": "瞬间移动。下键为放置传送门，上键为传送。"
+     },
+     "Laser":{
+          "name": "激光",
+          "desc": "发射激光。"
+     },
+     "PenetrantLaser":{
+          "name": "穿透激光",
+          "desc": "发射穿透激光。"
+     },
+     "Billiard":{
+          "name": "弹球",
+          "desc": "发射弹球。"
+     },
+     "Bubble":{
+          "name": "泡泡",
+          "desc": "发射泡泡。"
+     },
+     "StoneColumn":{
+          "name": "石柱",
+          "desc": "召唤石柱。"
+     },
+     "AccelerateClocks":{
+          "name": "加速",
+          "desc": "加速。"
+     },
+     "StopClocks":{
+          "name": "时停",
+          "desc": "时间停止。"
      }
 }

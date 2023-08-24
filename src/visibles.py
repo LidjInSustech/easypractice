@@ -190,3 +190,62 @@ class Stationary(Entity):
 
     def passive_move(self, direction, distance):
         pass
+
+class Interactive(Visible):
+    def __init__(self, camera, loc = pg.math.Vector2(), orientation = 0, radius = 64):
+        self.radius = radius
+        image = pg.Surface((radius*2, radius*2))
+        image.set_colorkey((0,0,0))
+        image.set_alpha(100)
+        pg.draw.circle(image, (255, 255, 0), (radius, radius), radius)
+        super().__init__(camera, loc = loc, orientation = orientation, image = image, rotate_image = False)
+
+    @staticmethod
+    def draw_interaction(image, rect, text, background):
+        surface = pg.display.get_surface()
+        font = util.get_font(40)
+        surface.blit(background, (0,0))
+        surface.blit(image, rect)
+        textbox = pg.Surface((surface.get_rect().w, 100), pg.SRCALPHA)
+        textbox.fill((0,0,0,100))
+        textimage, textrect = font.render(text, fgcolor = (255, 255, 255))
+        textrect.center = textbox.get_rect().center
+        textbox.blit(textimage, textrect)
+        surface.blit(textbox, (0, surface.get_rect().h - 100))
+
+    def interact(self, background):
+        background = background
+        rect = background.get_rect()
+        rectl = pg.Rect(10, 10, rect.w//2-20, rect.h-20)
+        rectr = pg.Rect(rect.w//2+10, 10, rect.w//2-20, rect.h-20)
+        image0 = util.load_image_alpha('appearance/human0.png', rectl)
+        image1 = util.load_image_alpha('appearance/human1.png', rectr)
+        play = [
+            (image0, rectl, '你好呀!'),
+            (image1, rectr, '......'),
+            (image0, rectl, '不会说话?'),
+            (image0, rectl, '...')
+        ]
+        for image, rect, text in play:
+            self.draw_interaction(image, rect, text, background)
+            pg.display.flip()
+            self.wajiting = True
+            clock = pg.time.Clock()
+            pg.event.clear()
+            while self.wajiting:
+                clock.tick(60)
+                for event in pg.event.get():
+                    if event.type == pg.KEYDOWN:
+                        self.wajiting = False
+                        break
+        return 0
+
+class Entrance(Visible):
+    def __init__(self, camera, loc = pg.math.Vector2(), orientation = 0, radius = 64, info = None):
+        self.radius = radius
+        self.info = info
+        image = pg.Surface((radius*2, radius*2))
+        image.set_colorkey((0,0,0))
+        image.set_alpha(100)
+        pg.draw.circle(image, (255, 255, 0), (radius, radius), radius)
+        super().__init__(camera, loc = loc, orientation = orientation, image = image, rotate_image = False)

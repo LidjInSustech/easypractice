@@ -24,6 +24,8 @@ class Controller():
         self.fields = pg.sprite.Group()
         self.entities = FlexibleGroup()
         self.acessories = pg.sprite.Group()
+        self.interactives = pg.sprite.Group()
+        self.entrances = pg.sprite.Group()
 
         self.stop_clocks = pg.sprite.GroupSingle()
 
@@ -61,6 +63,7 @@ class Controller():
         self.blood = False
         self.state = 1
         pg.event.set_allowed([pg.QUIT, pg.KEYUP, pg.KEYDOWN])
+        self.result = None
         while self.state == 1:
             clock.tick(self.flamerate)
 
@@ -68,6 +71,7 @@ class Controller():
             self.update()
             self.check_finish()
             pg.display.flip()
+        return self.result
 
     def update(self):
         for event in pg.event.get():
@@ -91,6 +95,8 @@ class Controller():
         else:
             self.entities.update()
         self.fields.update()
+        self.interactives.update()
+        self.entrances.update()
 
         self.maintain_boundaries()
         self.acessories.update()
@@ -108,6 +114,8 @@ class Controller():
     def draw(self):
         self.predraw.fill((0,0,0))
         self.predraw.blit(self.floor.image, self.floor.rect)
+        self.interactives.draw(self.predraw)
+        self.entrances.draw(self.predraw)
         self.fields.draw(self.predraw)
         self.entities.draw(self.predraw)
         self.acessories.draw(self.predraw)
@@ -175,6 +183,18 @@ class Controller():
         # switch weapon
         if key == self.keys['alter arm']:
             self.player.switch_weapon()
+
+        if key == self.keys['interaction']:
+            for entrance in self.entrances:
+                if (entrance.loc - self.player.loc).length_squared() < entrance.radius**2:
+                    self.result = entrance.info
+                    self.state = 5
+                    return
+            for interactive in self.interactives:
+                if (interactive.loc - self.player.loc).length_squared() < interactive.radius**2:
+                    image = pg.transform.scale(self.predraw, self.screen.get_rect().size)
+                    interactive.interact(image)
+                    break
 
     def maintain_boundaries(self):
         for entity in self.entities:

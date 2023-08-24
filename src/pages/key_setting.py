@@ -3,7 +3,7 @@ import util
 
 class Page(util.Rolling_Box):
     def __init__(self):
-        self.label_names = ['up','down','left','right','turn left','turn right','fast mode','alter arm','skill1','skill2','skill3','skill4','skill5','skill6','default','confirm']
+        self.label_names = ['up','down','left','right','turn left','turn right','fast mode','alter arm','skill1','skill2','skill3','skill4','skill5','skill6','interaction','default','confirm']
         self.read_config()
         screen = pg.display.get_surface()
         image = util.load_image('basic/loading_page.png', screen.get_size())

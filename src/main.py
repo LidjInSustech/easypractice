@@ -9,16 +9,41 @@ import pages.settings
 import pages.equiptment_setting
 import skills.skills
 
-def load_game():
-    ctrler = controller.Controller()
-    player = entities.Player(ctrler, pg.math.Vector2(-100, 0), 0, util.load_image_alpha('entities/human0.png',(64,64)))
-    player.skills = [skills.skills.FastMove(player), skills.skills.MagicBullet(player)]
-    ctrler.load_player(player)
-    ctrler.load_floor(util.load_image('floor/bigBackground.png',(1024,1024), (0,0,0)))
-    #entity = visibles.Stationary(ctrler, pg.math.Vector2(100, 0), 0, 2, util.load_image_alpha('entities/stone.png',(64,96)), rotate_image=False)
-    entity = entities.RandomWalk(ctrler, pg.math.Vector2(100, 0), 0, util.load_image_alpha('entities/human1.png',(64,64)))
+def map1(ctrler):
+    entity = visibles.Entity(ctrler, pg.math.Vector2(100, 100), 0, 1, util.load_image_alpha('entities/human1.png',(64,64)))
     ctrler.load_directing(entity)
-    ctrler.start()
+    interactive = visibles.Interactive(ctrler.camera, pg.math.Vector2(100, 100), 0, 64)
+    ctrler.interactives.add(interactive)
+    info = {'loc': pg.math.Vector2(0, 0), 'orientation': 0, 'map_name': 'floor/bigBackground.png', 'test': 2}
+    entrance = visibles.Entrance(ctrler.camera, pg.math.Vector2(0, 0), 0, 64, info)
+    ctrler.entrances.add(entrance)
+
+def map2(ctrler):
+    entity = entities.RandomWalk(ctrler, pg.math.Vector2(100, 100), 0, util.load_image_alpha('entities/human1.png',(64,64)))
+    ctrler.load_directing(entity)
+    info = {'loc': pg.math.Vector2(0, 0), 'orientation': 0, 'map_name': 'floor/colorful.png', 'test': 1}
+    entrance = visibles.Entrance(ctrler.camera, pg.math.Vector2(0, 0), 0, 64, info)
+    ctrler.entrances.add(entrance)
+
+def load_map(info):
+    ctrler = controller.Controller()
+    player = entities.Player(ctrler, info['loc'], info['orientation'], util.load_image_alpha('entities/human0.png',(64,64)))
+    player.skills = [skills.skills.FastMove(player)]
+    ctrler.load_player(player)
+    ctrler.load_floor(util.load_image(info['map_name'],(1024,1024), (0,0,0)))
+
+    if info['test'] == 1:
+        map1(ctrler)
+    elif info['test'] == 2:
+        map2(ctrler)
+
+    return ctrler.start()
+
+def load_game():
+    result = {'loc': pg.math.Vector2(0, 0), 'orientation': 0, 'map_name': 'floor/bigBackground.png', 'test': 2}
+    result = load_map(result)
+    while result != None:
+        result = load_map(result)
 
 def get_size():
     desktop_size = pg.display.get_desktop_sizes()[0]
